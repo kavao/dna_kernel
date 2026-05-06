@@ -1,0 +1,31 @@
+# ===== rulesync 生成物 =====
+# .claude/ .cursor/ .codex/ はコミット対象（クローン後すぐ使えるようにするため）
+# 個人設定ファイルだけ除外する
+.claude/settings.local.json
+
+# ===== ワークスペース（ローカル作業ファイル） =====
+# ディレクトリ構造（.gitkeep）は残し、中身のファイルだけ除外する
+_workingspace/**
+!_workingspace/**/
+!_workingspace/**/.gitkeep
+_backup/
+_old/
+
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# ===== Node.js =====
+node_modules/
+
+# ===== 環境変数 =====
+.env
+.env.local
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
