@@ -87,15 +87,18 @@ description: "自己発展型ルールガバナンスの概念正本"
 参照:
 
 - ルール作成作法: `rules/rule-authoring.md`
-- パターン説明: `docs/self-evolving-governance.md`
+- パターン説明: `docs/dna-kernel/self-evolving-governance.md`
 
 ## プロジェクト導入モード
 
 定義:
-新しいプロジェクトへ dna_kernel を持ち込むときは、まず `overview.md` をプロジェクト概要の正本候補として扱う。
+新しいプロジェクトへ dna_kernel を持ち込むときは、既存構成を確認し、新規作成か既存注入かを判定してから進める。
 
 必須:
 
+- 既存の `README.md`, `docs/`, `tools/`, `.rulesync/`, `rulesync.jsonc` の有無を確認する。
+- 既存プロジェクトではルート `README.md` を上書き・移動しない。
+- dna_kernel の説明は `docs/dna-kernel/` 配下へ置く。
 - 作業開始時に `overview.md` が存在するか確認する。
 - `overview.md` がない場合は、作成するかをユーザーに確認する。
 - 作成する場合は、rulesync と uv の導入状況を確認し、未導入なら導入案を提示して明示了承を得る。
@@ -104,12 +107,30 @@ description: "自己発展型ルールガバナンスの概念正本"
 
 禁止:
 
+- 既存プロジェクトの README を dna_kernel の説明で置き換えない。
 - `overview.md` がない状態で、プロジェクト種別や目的を推測して書き始めない。
 - rulesync や uv の導入を、ユーザーの了承なしに自動実行しない。
 
 参照:
 
 - 導入手順: `skills/project-onboarding/SKILL.md`
+
+## 既存プロジェクト注入モード
+
+定義:
+すでに README・docs・tools・設定を持つプロジェクトへ、既存構成を壊さず dna_kernel を追加する作業モード。
+
+必須:
+
+- 既存ファイルの有無と役割を確認し、変更予定を提示して了承を得る。
+- `.rulesync/`, `rulesync.jsonc`, `docs/dna-kernel/`, `tools/kernel/` を追加・統合の候補として扱う。
+- 既存 README はプロジェクト自身の入口として尊重し、必要な追記も確認後に行う。
+- rulesync 生成物は `.gitignore` に追加する。
+
+禁止:
+
+- 既存 README、既存 docs、既存 tools を確認なしに移動・削除・上書きしない。
+- dna_kernel の都合でプロジェクト固有の説明や導線を奪わない。
 
 ## DNA_KERNEL 開発モード
 

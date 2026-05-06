@@ -1,17 +1,18 @@
 ---
 name: project-onboarding
-description: "新規プロジェクトへ dna_kernel を導入し、overview.md を起点に作業支援スケルトンを立ち上げる"
+description: "新規作成または既存注入で dna_kernel を導入し、overview.md と docs/dna-kernel/ を起点に支援スケルトンを立ち上げる"
 targets: ["*"]
 ---
 
 ## 目的
 
-新しいプロジェクトで dna_kernel を使い始めるときに、最初の会話と初期化を迷わせない。
-`overview.md` をプロジェクト概要の正本候補として作り、rulesync・uv・ワークスペースを整えてから、プロジェクト内容を聞く。
+新しいプロジェクトや既存プロジェクトで dna_kernel を使い始めるときに、最初の会話と初期化を迷わせない。
+既存構成を壊さず、`overview.md` と `docs/dna-kernel/` を起点に rulesync・uv・ワークスペースを整える。
 
 ## 適用する場面
 
 - ユーザーが新規プロジェクトへ dna_kernel を導入したいと言ったとき
+- ユーザーが既存プロジェクトへ dna_kernel を注入したいと言ったとき
 - ルールやスキルはあるが、プロジェクト概要がまだ見当たらないとき
 - 「開発を進める際の支援スケルトン」を作る依頼を受けたとき
 
@@ -21,7 +22,59 @@ targets: ["*"]
 - ユーザーが明示的に「DNA_KERNEL 開発モード」と言ったとき
 - 既存の `overview.md` があり、ユーザーが通常の作業を依頼しているとき
 
-## 基本フロー
+## 最初に判定すること
+
+プロジェクトルートで次を確認する。
+
+- `README.md`
+- `overview.md`
+- `docs/`
+- `tools/`
+- `.rulesync/`
+- `rulesync.jsonc`
+- `.gitignore`
+
+判定:
+
+- `README.md` や既存 docs/tools がある場合は **既存プロジェクト注入モード** として扱う。
+- README も概要もなく、空に近い場合は **新規プロジェクト作成モード** として扱う。
+- dna_kernel 本体を修正している場合は **DNA_KERNEL 開発モード** として扱う。
+
+## README の扱い
+
+- ルート `README.md` はプロジェクト自身の入口として扱う。
+- dna_kernel の詳しい説明は `docs/dna-kernel/` 配下へ置く。
+- 既存プロジェクトの README を確認なしに移動・上書きしない。
+- README が存在しない新規プロジェクトでは、作成するかユーザーに確認する。
+
+## 既存プロジェクト注入モード
+
+既存プロジェクトでは、先に変更予定を提示して了承を得る。
+
+提示する内容:
+
+- 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `docs/dna-kernel/`, `tools/kernel/`
+- 追記する可能性があるファイル: `.gitignore`, `pyproject.toml`
+- 触らない方針: 既存 `README.md` は上書きしない
+
+確認文の例:
+
+```text
+既存プロジェクトとして扱います。README.md は触らず、dna_kernel の説明は docs/dna-kernel/ に追加します。
+.rulesync/・rulesync.jsonc・tools/kernel/・.gitignore の追加または統合を進めてよいですか？
+```
+
+了承後の流れ:
+
+1. `docs/dna-kernel/` に説明文書を置く。
+2. `.rulesync/` と `rulesync.jsonc` を追加または統合する。
+3. `tools/kernel/` に必要なツールを置く。
+4. `.gitignore` に rulesync 生成物と `_workingspace/` の扱いを追記する。
+5. `npx rulesync generate --dry-run` を実行し、結果を提示する。
+6. 了承後に `npx rulesync generate` を実行する。
+7. 必要なら `overview.md` を作るか確認し、プロジェクト内容を聞く。
+
+## 新規プロジェクト作成モード
 
 ### 1. overview.md の有無を確認する
 
@@ -156,6 +209,7 @@ dna_kernel 本体を直していると判断できる場合は、このスキル
 
 - `.rulesync/` のルールやスキルを修正する依頼
 - `README.md` や `manifest.md` の導入説明を直す依頼
+- `docs/dna-kernel/` の説明を直す依頼
 - `tools/kernel/` や `init.py` を修正する依頼
 
 この場合は、既存ファイルを読んで直接修正し、必要に応じて `npx rulesync generate --dry-run` または `npx rulesync generate --check` で確認する。
