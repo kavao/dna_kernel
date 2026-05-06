@@ -1,7 +1,7 @@
 ---
 name: workspace-audit-log
 description: >-
-  _workingspace/log/YYYYMM.md 査証ログを tools/workspace_audit_log.py で追記専用運用する。
+  _workingspace/log/YYYYMM.md 査証ログを tools/kernel/workspace_audit_log.py で追記専用運用する。
   既存行の上書き・削除は行わない。
 targets: ["*"]
 ---
@@ -35,44 +35,44 @@ targets: ["*"]
 **1件追記**:
 
 ```bash
-python tools/workspace_audit_log.py append "関連ファイルを更新。次は…が望ましい。"
+python tools/kernel/workspace_audit_log.py append "関連ファイルを更新。次は…が望ましい。"
 ```
 
 **標準入力から**（長文に便利）:
 
 ```bash
-echo "本文" | python tools/workspace_audit_log.py append
+echo "本文" | python tools/kernel/workspace_audit_log.py append
 ```
 
 **追記先の月を指定**:
 
 ```bash
-python tools/workspace_audit_log.py append --year-month 202604 "本文"
+python tools/kernel/workspace_audit_log.py append --year-month 202604 "本文"
 ```
 
 **エントリの日時を指定**:
 
 ```bash
-python tools/workspace_audit_log.py append --at "2026-04-11 15:30" "本文"
+python tools/kernel/workspace_audit_log.py append --at "2026-04-11 15:30" "本文"
 ```
 
 **今月のログファイルのパスを確認**:
 
 ```bash
-python tools/workspace_audit_log.py path
+python tools/kernel/workspace_audit_log.py path
 ```
 
 **体裁チェック**（読み取り専用）:
 
 ```bash
-python tools/workspace_audit_log.py verify
-python tools/workspace_audit_log.py verify --strict
+python tools/kernel/workspace_audit_log.py verify
+python tools/kernel/workspace_audit_log.py verify --strict
 ```
 
 **dry-run**（書き込まずに確認）:
 
 ```bash
-python tools/workspace_audit_log.py append --dry-run "本文"
+python tools/kernel/workspace_audit_log.py append --dry-run "本文"
 ```
 
 ## 禁止
@@ -88,7 +88,7 @@ python tools/workspace_audit_log.py append --dry-run "本文"
 
 ## 関連
 
-- スクリプト: `tools/workspace_audit_log.py`
+- スクリプト: `tools/kernel/workspace_audit_log.py`
 - 保存先: `_workingspace/log/YYYYMM.md`
 - 概念正本: `rules/concepts.md`（査証ログの原則）
 - 姉妹スキル: `workspace-diary`（`_workingspace/diary/`）

@@ -29,5 +29,5 @@
 ## 依存の注意
 
 - `novel_project_check.py` は `novel_code_allocate.py` と `novel_image_layout.py` を import します（3ファイルはセット）。
-- `workspace_audit_log.py` と `json_weighted_pick.py` は単独で動きます。
+- `kernel/workspace_audit_log.py` と `kernel/json_weighted_pick.py` は単独で動きます。
 

@@ -1,7 +1,7 @@
 ---
 name: workspace-diary
 description: >-
-  _workingspace/diary/YYYYMM.md 横断ナレッジ日記を tools/workspace_audit_log.py diary で追記専用運用する。
+  _workingspace/diary/YYYYMM.md 横断ナレッジ日記を tools/kernel/workspace_audit_log.py diary で追記専用運用する。
   査証ログと同様に既存行の上書き・削除は行わない。
 targets: ["*"]
 ---
@@ -29,43 +29,43 @@ targets: ["*"]
 **1件追記**:
 
 ```bash
-python tools/workspace_audit_log.py diary append "○○の方針で固定した。理由は…"
+python tools/kernel/workspace_audit_log.py diary append "○○の方針で固定した。理由は…"
 ```
 
 **標準入力から**:
 
 ```bash
-echo "本文" | python tools/workspace_audit_log.py diary append
+echo "本文" | python tools/kernel/workspace_audit_log.py diary append
 ```
 
 **追記先の月を指定**:
 
 ```bash
-python tools/workspace_audit_log.py diary append --year-month 202604 "本文"
+python tools/kernel/workspace_audit_log.py diary append --year-month 202604 "本文"
 ```
 
 **今月の日記ファイルのパスを確認**:
 
 ```bash
-python tools/workspace_audit_log.py diary path
+python tools/kernel/workspace_audit_log.py diary path
 ```
 
 **体裁チェック**:
 
 ```bash
-python tools/workspace_audit_log.py diary verify
+python tools/kernel/workspace_audit_log.py diary verify
 ```
 
 **dry-run**（書き込まずに確認）:
 
 ```bash
-python tools/workspace_audit_log.py diary append --dry-run "本文"
+python tools/kernel/workspace_audit_log.py diary append --dry-run "本文"
 ```
 
 ## 禁止
 
 - 既存行の削除・並べ替え・中間挿入・全文置換を行わない。
-- `workspace_audit_log.py diary` を使わずファイルを全文上書きしない（LLM の誤動作で履歴が消えるリスク）。
+- `tools/kernel/workspace_audit_log.py diary` を使わずファイルを全文上書きしない（LLM の誤動作で履歴が消えるリスク）。
 
 ## エージェント向け運用
 
@@ -73,7 +73,7 @@ python tools/workspace_audit_log.py diary append --dry-run "本文"
 
 ## 関連
 
-- スクリプト: `tools/workspace_audit_log.py`（`diary` サブコマンド）
+- スクリプト: `tools/kernel/workspace_audit_log.py`（`diary` サブコマンド）
 - 保存先: `_workingspace/diary/YYYYMM.md`
 - 概念正本: `rules/concepts.md`（査証ログの原則）
 - 姉妹スキル: `workspace-audit-log`（`_workingspace/log/`）

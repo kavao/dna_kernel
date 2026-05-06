@@ -23,11 +23,11 @@ def init() -> None:
 
     print()
     print("セットアップ完了。以下のツールが使えます:")
-    print("  uv run python tools/workspace_audit_log.py append '本文'")
-    print("  uv run python tools/json_weighted_pick.py <file.json> -p <path>")
+    print("  uv run python tools/kernel/workspace_audit_log.py append '本文'")
+    print("  uv run python tools/kernel/json_weighted_pick.py <file.json> -p <path>")
     print()
     print("ルールを各 LLM ツールへ反映するには:")
-    print("  npx rulesync")
+    print("  npx rulesync generate")
 
 
 if __name__ == "__main__":

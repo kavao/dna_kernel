@@ -27,6 +27,7 @@ rulesync が各 LLM ツールのスキル設定へ変換します。
 | `.rulesync/skills/approval-flow/SKILL.md` | dry-run→承認→実行→確認の承認フロー | `.rulesync/skills/approval-flow/` |
 | `.rulesync/skills/weighted-pick/SKILL.md` | JSON 重み付き乱数選択の手順 | `.rulesync/skills/weighted-pick/` |
 | `.rulesync/skills/project-context/SKILL.md` | プロジェクト文脈の要約・引き継ぎ | `.rulesync/skills/project-context/` |
+| `.rulesync/skills/project-onboarding/SKILL.md` | 新規プロジェクト導入と overview.md 作成フロー | `.rulesync/skills/project-onboarding/` |
 | `.rulesync/skills/code-testing/SKILL.md` | コード変更時のテスト実行・デグレード防止 | `.rulesync/skills/code-testing/` |
 
 ## rulesync.jsonc（rulesync 設定）
@@ -49,8 +50,8 @@ rulesync の管理外。人間が読む説明ドキュメント。
 
 | ファイル | 役割 | 新プロジェクトでの配置先（例） |
 |----------|------|-------------------------------|
-| `workspace_audit_log.py` | 査証ログ・日記への追記書き込み | `tools/workspace_audit_log.py` |
-| `json_weighted_pick.py` | JSON リストからの重み付き乱数選択 | `tools/json_weighted_pick.py` |
+| `tools/kernel/workspace_audit_log.py` | 査証ログ・日記への追記書き込み | `tools/kernel/workspace_audit_log.py` |
+| `tools/kernel/json_weighted_pick.py` | JSON リストからの重み付き乱数選択 | `tools/kernel/json_weighted_pick.py` |
 
 ### 拡張例（小説プロジェクト向け pre-work-check 実装）
 
@@ -65,6 +66,6 @@ rulesync の管理外。人間が読む説明ドキュメント。
 
 ## 最小セット（どれか1つから始めるなら）
 
-- **ルールだけ**: `.rulesync/rules/concepts.md` + `rulesync.jsonc` + `rulesync` 実行
+- **ルールだけ**: `.rulesync/rules/concepts.md` + `rulesync.jsonc` + `npx rulesync generate` 実行
 - **ログまで**: 上記に `workspace_audit_log.py` を追加
 - **pre-work-check まで**: 上記にチェックスクリプトを追加（`novel_project_check.py` はその拡張例）

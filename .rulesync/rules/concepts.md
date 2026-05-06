@@ -1,3 +1,9 @@
+---
+targets: ["*"]
+root: true
+description: "自己発展型ルールガバナンスの概念正本"
+---
+
 # concepts — 自己発展型ルールガバナンスの概念正本
 
 ここには、プロジェクト全体の判断基準となる「短い定義・禁止・完了条件」だけを置きます。
@@ -42,7 +48,7 @@
 
 必須:
 
-- 作業後は `_workingspace/log/YYYYMM.md` に追記する（`tools/workspace_audit_log.py` を使う）。
+- 作業後は `_workingspace/log/YYYYMM.md` に追記する（`tools/kernel/workspace_audit_log.py` を使う）。
 - 既存行の削除・上書き・並べ替えは行わない。
 - 完了したチェックリストの削除で「記録した」と見なさない。作業事実は必ずログへ。
 
@@ -82,3 +88,40 @@
 
 - ルール作成作法: `rules/rule-authoring.md`
 - パターン説明: `docs/self-evolving-governance.md`
+
+## プロジェクト導入モード
+
+定義:
+新しいプロジェクトへ dna_kernel を持ち込むときは、まず `overview.md` をプロジェクト概要の正本候補として扱う。
+
+必須:
+
+- 作業開始時に `overview.md` が存在するか確認する。
+- `overview.md` がない場合は、作成するかをユーザーに確認する。
+- 作成する場合は、rulesync と uv の導入状況を確認し、未導入なら導入案を提示して明示了承を得る。
+- 了承後に導入・初期化・rulesync 生成を行い、保存先と確認結果を報告する。
+- 導入後に、どのようなプロジェクトを行うのかをユーザーに確認し、`overview.md` の初期内容へ反映する。
+
+禁止:
+
+- `overview.md` がない状態で、プロジェクト種別や目的を推測して書き始めない。
+- rulesync や uv の導入を、ユーザーの了承なしに自動実行しない。
+
+参照:
+
+- 導入手順: `skills/project-onboarding/SKILL.md`
+
+## DNA_KERNEL 開発モード
+
+定義:
+dna_kernel 自体を開発・修正する作業モード。このモードでは、利用先プロジェクトの概要確認や導入質問を省略する。
+
+必須:
+
+- ユーザーが dna_kernel 本体のルール・スキル・ツール・README の改善を依頼している場合、このモードとして扱う。
+- 既存ファイルを読み、必要な変更を直接行う。
+- 変更後は rulesync の dry-run または check など、影響範囲に応じた確認を行う。
+
+禁止:
+
+- dna_kernel 本体の修正依頼に対して、`overview.md` 作成や新規プロジェクト種別の質問を挟まない。

@@ -1,7 +1,7 @@
 ---
 name: weighted-pick
 description: >-
-  JSON リストから tools/json_weighted_pick.py で均等または確率フィールドに基づき乱数選択する。
+  JSON リストから tools/kernel/json_weighted_pick.py で均等または確率フィールドに基づき乱数選択する。
   LLM のあいまい抽選に頼らず Python で再現可能にする。
 targets: ["*"]
 ---
@@ -31,31 +31,31 @@ targets: ["*"]
 **文字列配列から均等に1件**:
 
 ```bash
-python tools/json_weighted_pick.py candidates.json -p options --seed 42 --json
+python tools/kernel/json_weighted_pick.py candidates.json -p options --seed 42 --json
 ```
 
 **重み付きオブジェクト配列から1件**:
 
 ```bash
-python tools/json_weighted_pick.py data.json -p items --json
+python tools/kernel/json_weighted_pick.py data.json -p items --json
 ```
 
 **JSON を直接渡す**:
 
 ```bash
-python tools/json_weighted_pick.py --eval '{"items":[{"name":"A","weight":40},{"name":"B","weight":60}]}' -p items --json
+python tools/kernel/json_weighted_pick.py --eval '{"items":[{"name":"A","weight":40},{"name":"B","weight":60}]}' -p items --json
 ```
 
 **標準入力から**:
 
 ```bash
-type data.json | python tools/json_weighted_pick.py - -p some.path
+type data.json | python tools/kernel/json_weighted_pick.py - -p some.path
 ```
 
 **複数回抽選**:
 
 ```bash
-python tools/json_weighted_pick.py data.json -p items -n 5 --json
+python tools/kernel/json_weighted_pick.py data.json -p items -n 5 --json
 ```
 
 **多段抽選（例: カテゴリ → 詳細）**:  
@@ -76,4 +76,4 @@ python tools/json_weighted_pick.py data.json -p items -n 5 --json
 
 ## 関連
 
-- スクリプト: `tools/json_weighted_pick.py`
+- スクリプト: `tools/kernel/json_weighted_pick.py`

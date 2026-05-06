@@ -34,6 +34,7 @@ dna_kernel/
       approval-flow/SKILL.md        ← dry-run→承認→実行→確認の承認フロー
       weighted-pick/SKILL.md        ← JSON 重み付き乱数選択の手順
       project-context/SKILL.md      ← プロジェクト文脈の要約・引き継ぎ
+      project-onboarding/SKILL.md   ← 新規プロジェクト導入と overview.md 作成フロー
       code-testing/SKILL.md         ← コード変更時のテスト実行・デグレード防止
   docs/
     self-evolving-governance.md  ← パターン全体の説明
@@ -97,21 +98,33 @@ your-project/
 
 ### 5. rulesync を実行する
 
+生成前に、まず dry-run で出力内容を確認します。
+
 ```bash
-npx rulesync
+npx rulesync generate --dry-run
+```
+
+問題がなければ生成します。
+
+```bash
+npx rulesync generate
 ```
 
 各 LLM ツール向けの設定ファイル（`.claude/`、`.cursor/`、`.codex/` 等）が自動生成されます。
 
+`npx rulesync` だけを実行すると、現在の rulesync ではヘルプが表示されるだけです。
+これはエラーではなく、サブコマンドが未指定であることを示しています。
+
 ### 6. ツールを置く（任意）
 
-コアツールをプロジェクトの `tools/` へコピーします。
+コアツールをプロジェクトの `tools/kernel/` へコピーします。
 
 ```
 your-project/
   tools/
-    workspace_audit_log.py   ← 査証ログ・日記への追記（コア）
-    json_weighted_pick.py    ← JSON 重み付き乱数選択（コア）
+    kernel/
+      workspace_audit_log.py ← 査証ログ・日記への追記
+      json_weighted_pick.py  ← JSON 重み付き乱数選択
 ```
 
 `novel_project_check.py`（+依存2ファイル）は `pre-work-check` パターンの小説プロジェクト向け実装例です。
@@ -122,9 +135,15 @@ your-project/
 dna_kernel の `.gitignore` をそのままコピーするか、既存の `.gitignore` に以下を追記します。
 
 ```
-# rulesync 生成物は原則コミットする（.claude/ .cursor/ .codex/ は除外しない）
-# 個人設定だけ除外
-.claude/settings.local.json
+# rulesync 生成物
+# 正本は rulesync.jsonc と .rulesync/ に置き、各ツール向け生成物は除外する
+.claude/
+.cursor/
+.codex/
+.kilo/
+.agent/
+AGENTS.md
+CLAUDE.md
 
 # ワークスペース（ローカル作業ファイル）
 _workingspace/**
@@ -133,8 +152,8 @@ _workingspace/**
 _backup/
 ```
 
-rulesync の生成物（`.claude/`, `.cursor/`, `.codex/`）をコミットしておくことで、
-リポジトリをクローンしたメンバーが rulesync を実行しなくてもすぐ使えます。
+rulesync の生成物はコミットせず、`rulesync.jsonc` と `.rulesync/` を正本としてコミットします。
+リポジトリをクローンしたメンバーは、必要に応じて `npx rulesync generate` を実行して各ツール向け設定を再生成します。
 
 ## 日常運用でよく使うコマンド
 
@@ -147,13 +166,13 @@ uv run python init.py
 ルール再生成（`.rulesync/` を変更したあとに実行）:
 
 ```bash
-npx rulesync
+npx rulesync generate
 ```
 
 査証ログ追記:
 
 ```bash
-uv run python tools/workspace_audit_log.py append "作業内容"
+uv run python tools/kernel/workspace_audit_log.py append "作業内容"
 ```
 
 ## 既存プロジェクトへの段階的な組み込み方
@@ -163,4 +182,14 @@ uv run python tools/workspace_audit_log.py append "作業内容"
 1. `.rulesync/rules/concepts.md` を置き、既存ルールの「短い定義・禁止・完了条件」だけを移す
 2. 既存の各ルールファイルから概念本文を削り、`concepts.md` への参照リンクに置き換える
 3. `workspace_audit_log.py` を置いてから、LLM への指示に「作業後はログを書く」を加える
-4. `npx rulesync` を実行して各ツールへ反映する
+4. `npx rulesync generate` を実行して各ツールへ反映する
+
+## 新規プロジェクト導入時の対話フロー
+
+新しいプロジェクトへ導入する場合、アシスタントはまず `overview.md` の有無を確認します。
+`overview.md` がなければ作成するかを確認し、了承後に rulesync・uv の導入状況を確認します。
+
+未導入のものがあれば、実行予定コマンドを提示して了承を得てから自動導入します。
+導入と `npx rulesync generate` が終わったあとで、どのようなプロジェクトを行うのかを質問し、回答を `overview.md` に反映します。
+
+dna_kernel 本体を修正する場合は **DNA_KERNEL 開発モード** として扱い、この導入質問フローは省略します。

@@ -1,7 +1,12 @@
 # ===== rulesync 生成物 =====
-# .claude/ .cursor/ .codex/ はコミット対象（クローン後すぐ使えるようにするため）
-# 個人設定ファイルだけ除外する
-.claude/settings.local.json
+# 正本は rulesync.jsonc と .rulesync/ に置き、各ツール向け生成物は除外する
+.claude/
+.cursor/
+.codex/
+.kilo/
+.agent/
+AGENTS.md
+CLAUDE.md
 
 # ===== ワークスペース（ローカル作業ファイル） =====
 # ディレクトリ構造（.gitkeep）は残し、中身のファイルだけ除外する
