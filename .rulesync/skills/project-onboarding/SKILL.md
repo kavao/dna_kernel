@@ -51,6 +51,21 @@ targets: ["*"]
 
 既存プロジェクトでは、先に変更予定を提示して了承を得る。
 
+### 注入先ルート
+
+ユーザーが注入先ディレクトリを明示した場合、そのディレクトリを注入先ルートとして扱う。
+monorepo の上位ディレクトリや Git ルートへ自動的に広げない。
+
+配置先:
+
+- `.rulesync/`
+- `rulesync.jsonc`
+- `docs/dna-kernel/`
+- `tools/kernel/`
+- `_workingspace/`
+
+これらは、指定された注入先ルートの配下に置く。
+
 提示する内容:
 
 - 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `docs/dna-kernel/`, `tools/kernel/`
@@ -60,8 +75,9 @@ targets: ["*"]
 確認文の例:
 
 ```text
-既存プロジェクトとして扱います。README.md は触らず、dna_kernel の説明は docs/dna-kernel/ に追加します。
-.rulesync/・rulesync.jsonc・tools/kernel/・.gitignore の追加または統合を進めてよいですか？
+指定されたディレクトリを注入先ルートとして扱います。上位の monorepo ルートや Git ルートへは広げません。
+README.md は触らず、dna_kernel の説明は docs/dna-kernel/ に追加します。
+.rulesync/・rulesync.jsonc・tools/kernel/・_workingspace/・.gitignore の追加または統合を進めてよいですか？
 ```
 
 了承後の流れ:

@@ -12,6 +12,25 @@ dna_kernel には、次の3つの作業モードがあります。
 
 既存プロジェクトでは、既存の構成を壊さないことを優先します。
 
+ユーザーが注入先ディレクトリを明示した場合、そのディレクトリを注入先ルートとして扱います。
+monorepo の上位ディレクトリや Git ルートへ自動的には広げません。
+
+例:
+
+```text
+K:\共有\10_プログラム\node\grokbot_news\packages\discord-bot\
+```
+
+このパスを指定された場合、以下は `packages/discord-bot/` 配下へ置きます。
+
+```text
+.rulesync/
+rulesync.jsonc
+docs/dna-kernel/
+tools/kernel/
+_workingspace/
+```
+
 基本方針:
 
 - 既存の `README.md` を上書きしない
@@ -69,4 +88,3 @@ _workingspace/**
 _backup/
 _old/
 ```
-
