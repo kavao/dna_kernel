@@ -37,6 +37,7 @@ _workingspace/
 基本方針:
 
 - 既存の `README.md` を上書きしない
+- `images/title.png` は dna_kernel 本体 README 用のタイトル画像であり、注入先プロジェクトへは**取り込まない**
 - 既存の `.gitignore`, `pyproject.toml`, `tools/`, `docs/` は内容を確認してから追記する
 - dna_kernel の詳しい説明は `docs/ja/dna-kernel/`（編集正本）と `docs/en/dna-kernel/`（対訳）へ置く
 - `.rulesync/`, `rulesync.jsonc`, `tools/kernel/` を正本・実働ツールとして追加する

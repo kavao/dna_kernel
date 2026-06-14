@@ -1,5 +1,7 @@
 # dna_kernel
 
+![dna_kernel — Self-Evolving Rule Governance](images/title.png)
+
 English · [日本語](README.ja.md)
 
 dna_kernel is a minimal kernel for injecting self-evolving rule governance into creative and development projects that use LLM harnesses.
@@ -15,3 +17,8 @@ Onboarding and injection guides:
 
 - [Documentation (EN)](docs/en/dna-kernel/README.md)
 - [ドキュメント（日本語）](docs/ja/dna-kernel/README.md)
+
+## Acknowledgments
+
+This project uses [rulesync](https://github.com/dyoshikawa/rulesync) to generate per-tool configurations from `.rulesync/`.  
+Special thanks to [dyoshikawa](https://github.com/dyoshikawa), the author of rulesync.

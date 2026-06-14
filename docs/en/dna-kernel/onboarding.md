@@ -37,6 +37,7 @@ _workingspace/
 Principles:
 
 - Do not overwrite the existing `README.md`
+- Do not copy `images/title.png` into the host project; it is for the dna_kernel repository README title only
 - Review `.gitignore`, `pyproject.toml`, `tools/`, and `docs/` before appending
 - Put detailed dna_kernel docs in `docs/ja/dna-kernel/` (source) and sync `docs/en/dna-kernel/` (translation)
 - Add `.rulesync/`, `rulesync.jsonc`, and `tools/kernel/` as canonical sources and working tools

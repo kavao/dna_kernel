@@ -72,6 +72,7 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 - 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/kernel/`
 - 追記する可能性があるファイル: `.gitignore`, `pyproject.toml`
 - 触らない方針: 既存 `README.md` は上書きしない
+- 取り込まない: `images/title.png`（dna_kernel 本体 README 用。注入先では不要）
 
 確認文の例:
 
