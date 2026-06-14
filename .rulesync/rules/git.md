@@ -8,23 +8,46 @@ globs: ["**/*"]
 
 ## コミットメッセージ
 
-- **コミットメッセージは日本語で書く**
-- 1行目は変更の要旨を簡潔に（40〜60字以内が目安）
-- 複数の変更を含む場合は、1行目の後に空行を入れてから箇条書きで内訳を書く
-- ユーザーからコミットメッセージ案を聞かれた場合は、**1行案**と**複数行案**の両方を提示する
+### 言語
 
-### 形式の例
+- **git に記録するコミットメッセージは、常に英語で書く**（決め打ち）。話者の会話言語に合わせて日本語等にしない。
+- ユーザーへメッセージ案を提示するときは、**英語のコミット本文の直下**に、話者の**会話言語（ネイティブ言語）**での説明を付ける。説明は `git commit` には含めない（確認・理解用）。
+- 会話言語の解決は `skills/user-locale/SKILL.md` と同じ優先順位（チャット明示 → local → ホーム config → OS locale）。
+- **docs の編集正本**（`docs/ja/` 等）や **ハーネス正本**（`.rulesync/` の日本語）とは別。コミットは git 履歴用の英語ログ、会話言語の説明はその場の補助。
+
+### 形式（git に記録する英語）
+
+- 1行目（subject）は変更の要旨を簡潔に（約 50〜72 文字目安）
+- 複数の変更を含む場合は、1行目の後に空行を入れてから箇条書きで内訳を書く（英語）
+- ユーザーからコミットメッセージ案を聞かれた場合は、**英語の 1行案**と**英語の複数行案**の両方を提示し、その**下**に会話言語での説明を付ける
+
+### 形式の例（git commit 用・英語）
 
 ```
-docs: ユーザー向けドキュメントを整備し、記述ルールと操作説明を追加
+feat: add user_prefs and locale skills for conversation language
 
-- .rulesync/rules/docs-writing.md を新規作成
-- docs/index.md に新スキルへのリンクを追加
-- 各手順ページに操作視点の節を追加
+- Add tools/kernel/user_prefs.py with init-config, show, and sync
+- Add user-locale and content-placement skills under .rulesync/
+- Document home config in docs/ja and docs/en onboarding
 ```
 
+### 提示の例（日本語話者への案）
+
+git に入れる英語:
+
 ```
-型注釈を修正: dict の value 型を str から Any に拡張
+feat: add GitHub Actions workflow for unit tests
+
+- Add .github/workflows/test.yml for Python 3.11 and 3.12
+- Document test command in code-testing skill
+```
+
+その下に会話言語（日本語）での説明:
+
+```
+（説明・日本語）
+GitHub Actions で unittest を回す CI を追加しました。
+Python 3.11 / 3.12 で同じコマンドを実行します。
 ```
 
 ### プレフィックス（任意）

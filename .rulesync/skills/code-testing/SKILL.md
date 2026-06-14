@@ -26,14 +26,10 @@ targets: ["*"]
 
 ### 変更後の基本確認
 
-プロジェクトで定めたコマンドを実行する（例）:
+プロジェクトで定めたコマンドを実行する（dna_kernel 本体: 下記「プロジェクトへの適用」参照）:
 
 ```bash
-python -m pytest tests/
-```
-
-```bash
-python -m unittest discover
+uv run python -m unittest discover -s tests -v
 ```
 
 終了コード **0** を確認してから完了とする。**0 以外** なら失敗を修正してから再実行する。
@@ -46,16 +42,15 @@ python -m unittest discover
 - 他のファイルに影響しうる変更を加えた後
 - 完了報告の前
 
-## プロジェクトへの適用
+## プロジェクトへの適用（dna_kernel）
 
-このスキルは次の2点をプロジェクト側で定義すれば動く。
-
-| 定義項目 | 例 |
+| 定義項目 | 値 |
 |----------|-----|
-| テスト実行コマンド | `pytest tests/`、`python -m unittest`、`npm test`、`go test ./...` など |
-| テストファイルの置き場 | `tests/`、`spec/`、同一ファイル内など |
+| テスト実行コマンド | `uv run python -m unittest discover -s tests -v` |
+| テストファイルの置き場 | `tests/` |
+| CI | push / pull_request で `.github/workflows/test.yml`（Python 3.11・3.12） |
 
-それ以外の手順（書く → 実行 → 確認 → 完了）はこのスキルで固定する。
+ローカルでも CI でも同じコマンドを使う。
 
 ## 失敗時の対処
 

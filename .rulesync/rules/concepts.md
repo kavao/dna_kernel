@@ -25,6 +25,8 @@ description: "自己発展型ルールガバナンスの概念正本"
 - 副本を直した場合は、対応する正本へ反映してから再生成・再エクスポートする。
 - どちらが正本か迷う領域では、作業前に既存ルール・スキルの「正本」節を確認する。
 
+**会話言語と書き込み正本の分離**: LLM とのチャット言語（ホーム config → `user-locale`）と、ファイルへの書き込み正本（`content-placement` + `rule-authoring` / `docs-writing`）は別軸。日本語で会話していても docs の編集正本は `docs/ja/`、表示用 EN 同期は `docs/en/` のまま。
+
 ## 完了扱い条件
 
 定義:
@@ -87,7 +89,7 @@ description: "自己発展型ルールガバナンスの概念正本"
 参照:
 
 - ルール作成作法: `rules/rule-authoring.md`
-- パターン説明: `docs/dna-kernel/self-evolving-governance.md`
+- パターン説明: `docs/ja/dna-kernel/self-evolving-governance.md`（編集正本）、`docs/en/dna-kernel/self-evolving-governance.md`（英訳）
 
 ## プロジェクト導入モード
 
@@ -98,7 +100,7 @@ description: "自己発展型ルールガバナンスの概念正本"
 
 - 既存の `README.md`, `docs/`, `tools/`, `.rulesync/`, `rulesync.jsonc` の有無を確認する。
 - 既存プロジェクトではルート `README.md` を上書き・移動しない。
-- dna_kernel の説明は `docs/dna-kernel/` 配下へ置く。
+- dna_kernel の説明は `docs/ja/dna-kernel/`（編集正本）と `docs/en/dna-kernel/`（英訳）へ置く。
 - 作業開始時に `overview.md` が存在するか確認する。
 - `overview.md` がない場合は、作成するかをユーザーに確認する。
 - 作成する場合は、rulesync と uv の導入状況を確認し、未導入なら導入案を提示して明示了承を得る。
@@ -124,7 +126,7 @@ description: "自己発展型ルールガバナンスの概念正本"
 
 - 既存ファイルの有無と役割を確認し、変更予定を提示して了承を得る。
 - ユーザーが注入先ディレクトリを明示した場合、そのディレクトリを注入先ルートとして扱う。
-- `.rulesync/`, `rulesync.jsonc`, `docs/dna-kernel/`, `tools/kernel/` を追加・統合の候補として扱う。
+- `.rulesync/`, `rulesync.jsonc`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/kernel/` を追加・統合の候補として扱う。
 - 既存 README はプロジェクト自身の入口として尊重し、必要な追記も確認後に行う。
 - rulesync 生成物は `.gitignore` に追加する。
 

@@ -4,7 +4,7 @@
 .cursor/
 .codex/
 .kilo/
-.agent/
+.agents/
 AGENTS.md
 CLAUDE.md
 
@@ -30,6 +30,9 @@ node_modules/
 # ===== 環境変数 =====
 .env
 .env.local
+
+# ===== user-locale（プロジェクト local 上書き） =====
+.dna-kernel.local.toml
 
 # ===== OS =====
 .DS_Store

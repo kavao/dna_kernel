@@ -1,13 +1,13 @@
 ---
 name: project-onboarding
-description: "新規作成または既存注入で dna_kernel を導入し、overview.md と docs/dna-kernel/ を起点に支援スケルトンを立ち上げる"
+description: "新規作成または既存注入で dna_kernel を導入し、overview.md と docs/ja/dna-kernel/（正本）・docs/en/dna-kernel/（英訳）を起点に支援スケルトンを立ち上げる"
 targets: ["*"]
 ---
 
 ## 目的
 
 新しいプロジェクトや既存プロジェクトで dna_kernel を使い始めるときに、最初の会話と初期化を迷わせない。
-既存構成を壊さず、`overview.md` と `docs/dna-kernel/` を起点に rulesync・uv・ワークスペースを整える。
+既存構成を壊さず、`overview.md` と `docs/ja/dna-kernel/` を起点に rulesync・uv・ワークスペースを整える。
 
 ## 適用する場面
 
@@ -43,7 +43,7 @@ targets: ["*"]
 ## README の扱い
 
 - ルート `README.md` はプロジェクト自身の入口として扱う。
-- dna_kernel の詳しい説明は `docs/dna-kernel/` 配下へ置く。
+- dna_kernel の詳しい説明は `docs/ja/dna-kernel/`（編集正本）と `docs/en/dna-kernel/`（英訳）へ置く。入口リンクは EN を先に並べる。
 - 既存プロジェクトの README を確認なしに移動・上書きしない。
 - README が存在しない新規プロジェクトでは、作成するかユーザーに確認する。
 
@@ -60,7 +60,8 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 
 - `.rulesync/`
 - `rulesync.jsonc`
-- `docs/dna-kernel/`
+- `docs/ja/dna-kernel/`
+- `docs/en/dna-kernel/`
 - `tools/kernel/`
 - `_workingspace/`
 
@@ -68,7 +69,7 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 
 提示する内容:
 
-- 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `docs/dna-kernel/`, `tools/kernel/`
+- 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/kernel/`
 - 追記する可能性があるファイル: `.gitignore`, `pyproject.toml`
 - 触らない方針: 既存 `README.md` は上書きしない
 
@@ -76,19 +77,20 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 
 ```text
 指定されたディレクトリを注入先ルートとして扱います。上位の monorepo ルートや Git ルートへは広げません。
-README.md は触らず、dna_kernel の説明は docs/dna-kernel/ に追加します。
+README.md は触らず、dna_kernel の説明は docs/ja/dna-kernel/（正本）と docs/en/dna-kernel/（英訳）に追加します。
 .rulesync/・rulesync.jsonc・tools/kernel/・_workingspace/・.gitignore の追加または統合を進めてよいですか？
 ```
 
 了承後の流れ:
 
-1. `docs/dna-kernel/` に説明文書を置く。
+1. `docs/ja/dna-kernel/` に説明文書を置き、同パスで `docs/en/dna-kernel/` に英訳を同期する。
 2. `.rulesync/` と `rulesync.jsonc` を追加または統合する。
 3. `tools/kernel/` に必要なツールを置く。
 4. `.gitignore` に rulesync 生成物と `_workingspace/` の扱いを追記する。
-5. `npx rulesync generate --dry-run` を実行し、結果を提示する。
-6. 了承後に `npx rulesync generate` を実行する。
-7. 必要なら `overview.md` を作るか確認し、プロジェクト内容を聞く。
+5. `corepack pnpm dlx rulesync generate --dry-run` を実行し、結果を提示する。
+6. 了承後に `corepack pnpm dlx rulesync generate` を実行する。
+7. `uv run python tools/kernel/user_prefs.py sync` で会話言語副本を再生成する。
+8. 必要なら `overview.md` を作るか確認し、プロジェクト内容を聞く。
 
 ## 新規プロジェクト作成モード
 
@@ -117,7 +119,7 @@ README.md は触らず、dna_kernel の説明は docs/dna-kernel/ に追加し�
 `overview.md` を作成する了承を得たら、次を確認する。
 
 ```bash
-npx rulesync --version
+corepack pnpm dlx rulesync --version
 uv --version
 ```
 
@@ -128,11 +130,12 @@ uv --version
 ```text
 rulesync または uv が未導入です。初期化に必要なので、こちらで導入してよいですか？
 実行予定:
-- npm install -g rulesync
+- corepack enable（未実行の場合）
 - uv の公式インストーラを実行
 - uv run python init.py
-- npx rulesync generate --dry-run
-- npx rulesync generate
+- corepack pnpm dlx rulesync generate --dry-run
+- corepack pnpm dlx rulesync generate
+- uv run python tools/kernel/user_prefs.py sync
 ```
 
 ### 3. 了承後に自動導入する
@@ -144,21 +147,23 @@ rulesync または uv が未導入です。初期化に必要なので、こち�
 Windows PowerShell:
 
 ```powershell
-npm install -g rulesync
+corepack enable
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 uv run python init.py
-npx rulesync generate --dry-run
-npx rulesync generate
+corepack pnpm dlx rulesync generate --dry-run
+corepack pnpm dlx rulesync generate
+uv run python tools/kernel/user_prefs.py sync
 ```
 
 macOS / Linux:
 
 ```bash
-npm install -g rulesync
+corepack enable
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv run python init.py
-npx rulesync generate --dry-run
-npx rulesync generate
+corepack pnpm dlx rulesync generate --dry-run
+corepack pnpm dlx rulesync generate
+uv run python tools/kernel/user_prefs.py sync
 ```
 
 既に導入済みのコマンドは再導入しなくてよい。
@@ -225,10 +230,10 @@ dna_kernel 本体を直していると判断できる場合は、このスキル
 
 - `.rulesync/` のルールやスキルを修正する依頼
 - `README.md` や `manifest.md` の導入説明を直す依頼
-- `docs/dna-kernel/` の説明を直す依頼
+- `docs/ja/dna-kernel/` の説明を直す依頼
 - `tools/kernel/` や `init.py` を修正する依頼
 
-この場合は、既存ファイルを読んで直接修正し、必要に応じて `npx rulesync generate --dry-run` または `npx rulesync generate --check` で確認する。
+この場合は、既存ファイルを読んで直接修正し、必要に応じて `corepack pnpm dlx rulesync generate --dry-run` または `corepack pnpm dlx rulesync generate --check` で確認する。
 
 ## 関連
 

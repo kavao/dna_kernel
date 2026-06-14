@@ -14,6 +14,10 @@
 - **重み付き乱数選択（weighted-pick）**
   - `kernel/json_weighted_pick.py`
   - 依存: なし（標準ライブラリのみ）
+- **ユーザーロケール（user-locale）**
+  - `kernel/user_prefs.py`
+  - ホーム config: `~/.config/dna-kernel/config.toml`（git 管理外）
+  - 依存: なし（標準ライブラリのみ、`tomllib`）
 
 ## 拡張例（小説プロジェクト向けの pre-work-check 実装）
 
@@ -30,4 +34,5 @@
 
 - `novel_project_check.py` は `novel_code_allocate.py` と `novel_image_layout.py` を import します（3ファイルはセット）。
 - `kernel/workspace_audit_log.py` と `kernel/json_weighted_pick.py` は単独で動きます。
+- `kernel/user_prefs.py` も単独で動きます。
 
