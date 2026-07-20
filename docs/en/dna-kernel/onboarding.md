@@ -111,10 +111,12 @@ Before writing files, declare placement with the `content-placement` skill (use 
 AGENTS.md
 CLAUDE.md
 
-# workspace (local working files)
+# workspace (plans are shared; logs and diary remain local)
 _workingspace/**
 !_workingspace/**/
 !_workingspace/**/.gitkeep
+!_workingspace/plans/
+!_workingspace/plans/*.md
 _backup/
 _old/
 

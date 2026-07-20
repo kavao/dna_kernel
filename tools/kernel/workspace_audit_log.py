@@ -27,15 +27,17 @@ class MonthlyTarget(str, Enum):
     DIARY = "diary"
 
 
-def repo_root() -> Path:
-    start = Path(__file__).resolve().parent
-    for candidate in (start, *start.parents):
+def repo_root(start: Path | None = None) -> Path:
+    current = (start or Path(__file__)).resolve()
+    if current.is_file():
+        current = current.parent
+    for candidate in (current, *current.parents):
         if (
             (candidate / "rulesync.jsonc").is_file()
             and (candidate / ".rulesync").is_dir()
         ) or (candidate / ".git").exists():
             return candidate
-    return Path.cwd().resolve()
+    raise FileNotFoundError("dna_kernel ルートを検出できません")
 
 
 def log_dir(root: Path | None = None) -> Path:
@@ -450,9 +452,12 @@ def main(argv: list[str] | None = None) -> int:
     dv.set_defaults(func=cmd_diary_verify)
 
     args = parser.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

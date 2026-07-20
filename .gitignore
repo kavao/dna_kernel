@@ -13,6 +13,8 @@ CLAUDE.md
 _workingspace/**
 !_workingspace/**/
 !_workingspace/**/.gitkeep
+!_workingspace/plans/
+!_workingspace/plans/*.md
 _backup/
 _old/
 

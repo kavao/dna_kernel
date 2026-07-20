@@ -111,10 +111,12 @@ uv run python tools/kernel/user_prefs.py show conversation.language
 AGENTS.md
 CLAUDE.md
 
-# ワークスペース（ローカル作業ファイル）
+# ワークスペース（計画書は共有、ログと日記はローカル）
 _workingspace/**
 !_workingspace/**/
 !_workingspace/**/.gitkeep
+!_workingspace/plans/
+!_workingspace/plans/*.md
 _backup/
 _old/
 
