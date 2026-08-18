@@ -5,6 +5,7 @@
 .codex/
 .kilo/
 .agents/
+.grok/
 AGENTS.md
 CLAUDE.md
 

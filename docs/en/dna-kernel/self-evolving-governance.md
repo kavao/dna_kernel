@@ -42,6 +42,8 @@ Pass a design-document file or directory as the argument when checking another l
 
 **Effect**: Remaining and completed work stays readable in one format across sessions and computers.
 
+Plans and design documents also include a `Version: MAJOR.MINOR` header and an append-only `## Change History` table. When a document changes, update the header version and append the date, version, and change description to the end of the history. `plan_check.py` checks the version format, the history table, and agreement between the header and the latest history row.
+
 ### 4. Append-only audit log
 
 After work, append to `_workingspace/log/YYYYMM.md`. Overwrites and deletions are forbidden.

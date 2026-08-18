@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -69,6 +70,14 @@ class RulesyncToolchainTests(unittest.TestCase):
         for asset in config["platforms"].values():
             self.assertEqual(len(asset["sha256"]), 64)
             self.assertTrue(asset["cache_path"].startswith(".tools/rulesync/15.0.1/"))
+
+    def test_rulesync_config_contains_supported_targets(self) -> None:
+        text = (ROOT / "rulesync.jsonc").read_text(encoding="utf-8")
+        match = re.search(r'"targets"\s*:\s*\[(.*?)\]', text, flags=re.DOTALL)
+        self.assertIsNotNone(match)
+        assert match is not None
+        targets = re.findall(r'"([^"]+)"', match.group(1))
+        self.assertEqual(targets, ["claudecode", "cursor", "codexcli", "grokcli"])
 
     def test_install_downloads_verifies_and_reuses_cache(self) -> None:
         payload = b"rulesync-test-binary"

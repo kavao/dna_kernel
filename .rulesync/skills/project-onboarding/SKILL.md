@@ -9,6 +9,27 @@ targets: ["*"]
 新しいプロジェクトや既存プロジェクトで dna_kernel を使い始めるときに、最初の会話と初期化を迷わせない。
 既存構成を壊さず、`overview.md` と `docs/ja/dna-kernel/` を起点に rulesync・uv・ワークスペースを整える。
 
+## 導入プロファイル
+
+導入前に、必要な範囲を次の3つから選ぶ。
+
+- **Rule-only**: `.rulesync/` のルール正本、Rulesync設定・ラッパー、各AIツール向け生成設定
+- **Governance**: Rule-only に完了規律、計画検査、査証ログ、`_workingspace/` を追加
+- **Full**: Governance に `project-onboarding`、`user-locale`、必要な補助スキル・ツールを追加
+
+Codex、Claude Code、Cursor、Grok Build等を切り替えるときのルール・完了条件・作業状態の再説明を減らすことが導入効果である。Rulesync 15.0.1の標準targetには `grokcli` があり `.grok/skills/` を生成するが、実際のGrok Buildの読み込みは導入先で確認する。
+
+## 標準読込順
+
+導入依頼を受けたら、次の順で確認する。
+
+1. ルートREADMEまたはユーザーの依頼から、導入目的を確認する。
+2. `manifest.md` で構成要素、導入先、プロファイルを確認する。
+3. 本スキルで新規作成・既存注入・DNA_KERNEL開発を判定する。
+4. `README.md`、`overview.md`、`docs/`、`tools/`、`.rulesync/`、`rulesync.jsonc`、`.gitignore`、`.dna-kernel.local.toml` を確認する。
+5. 会話言語の解決結果を確認し、プロジェクト上書きの要否を提示する。
+6. 変更予定と選択したプロファイルを提示し、了承を得てから書き込む。
+
 ## 適用する場面
 
 - ユーザーが新規プロジェクトへ dna_kernel を導入したいと言ったとき

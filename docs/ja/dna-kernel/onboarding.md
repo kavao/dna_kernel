@@ -10,6 +10,18 @@ dna_kernel には、次の3つの作業モードがあります。
 | 既存プロジェクト注入モード | すでにあるプロジェクトへ dna_kernel を追加する | 既存 README は触らず、dna_kernel 説明は `docs/ja/dna-kernel/` と `docs/en/dna-kernel/` へ置く |
 | DNA_KERNEL 開発モード | dna_kernel 本体を修正する | 導入質問を省略して直接修正する |
 
+## 導入プロファイルとツール切替
+
+導入先の規模や運用に応じて、取り込む範囲を選びます。
+
+| プロファイル | 取り込む範囲 | 向いている状況 |
+|---|---|---|
+| Rule-only | ルール正本、Rulesync設定・ラッパー、各AIツール向け生成設定 | まずCodex・Claude Code・Cursor等の指示を揃えたい |
+| Governance | Rule-only + 完了規律、計画検査、査証ログ、`_workingspace/` | 作業の完了根拠と履歴も残したい |
+| Full | Governance + onboarding、user-locale、必要な補助スキル・ツール | 複数人・複数PC・複数AIツールで運用したい |
+
+共通正本から対応targetの設定を生成するため、AIツールを切り替えるたびにルール、完了条件、計画状態、会話言語を説明し直すコストを下げられます。現在の標準targetは `claudecode`、`cursor`、`codexcli`、`grokcli` です。Rulesync 15.0.1は `grokcli` で `.grok/skills/` を生成しますが、実際のGrok Buildの読み込みは導入先で確認します。
+
 ## 既存プロジェクト注入モード
 
 既存プロジェクトでは、既存の構成を壊さないことを優先します。
@@ -44,21 +56,24 @@ _workingspace/
 - 既存の `.gitignore`, `pyproject.toml`, `tools/`, `docs/` は内容を確認してから追記する
 - dna_kernel の詳しい説明は `docs/ja/dna-kernel/`（編集正本）と `docs/en/dna-kernel/`（対訳）へ置く
 - `.rulesync/`, `rulesync.jsonc`, `config/rulesync_toolchain.json`, `tools/install_rulesync.py`, `tools/rulesync.py`, `tools/kernel/` を正本・実働ツールとして追加する
-- rulesync 生成物（`.claude/`, `.cursor/`, `.codex/`, `.agents/`, `.kilo/`, `AGENTS.md`, `CLAUDE.md`）は ignore する
+- rulesync 生成物（`.claude/`, `.cursor/`, `.codex/`, `.agents/`, `.grok/`, `.kilo/`, `AGENTS.md`, `CLAUDE.md`）は ignore する
+
+依存性は、Python `>=3.11` と標準ライブラリ中心のkernelツールを基盤とします。uvは推奨ですが任意で、日常のRulesync生成にNode.js、npm、pnpm、Corepackは不要です。Rulesync単体バイナリとネットワークは初回取得・版更新時だけ必要です。
 
 推奨フロー:
 
 1. 既存の README・docs・tools・.rulesync・rulesync.jsonc の有無を確認する
-2. 注入してよいか、変更予定を提示して了承を得る
-3. `docs/ja/dna-kernel/` に説明文書を置き、`docs/en/dna-kernel/` に英訳を同期する
-4. `.rulesync/` と `rulesync.jsonc` を追加または統合する
-5. `tools/kernel/` に必要なツールを置く
-6. `.gitignore` に rulesync 生成物、Rulesync キャッシュ、`_workingspace/` の扱いを追記する
-7. `python tools/install_rulesync.py` で Rulesync 15.0.1 を取得・検証する
-8. `python tools/rulesync.py generate --dry-run` で生成内容を確認する
-9. 了承後に `python tools/rulesync.py generate` を実行する
-10. `python tools/rulesync.py generate --check` と `uv run python tools/kernel/user_prefs.py sync` を実行する
-11. 必要なら `overview.md` を作るか確認し、プロジェクトの目的・成果物・制約を聞く
+2. Rule-only / Governance / Full のどれを使うかを提示する
+3. 注入してよいか、変更予定を提示して了承を得る
+4. `docs/ja/dna-kernel/` に説明文書を置き、`docs/en/dna-kernel/` に英訳を同期する
+5. `.rulesync/` と `rulesync.jsonc` を追加または統合する
+6. `tools/kernel/` に必要なツールを置く
+7. `.gitignore` に rulesync 生成物、Rulesync キャッシュ、`_workingspace/` の扱いを追記する
+8. `python tools/install_rulesync.py` で Rulesync 15.0.1 を取得・検証する
+9. `python tools/rulesync.py generate --dry-run` で生成内容を確認する
+10. 了承後に `python tools/rulesync.py generate` を実行する
+11. `python tools/rulesync.py generate --check` と `uv run python tools/kernel/user_prefs.py sync` を実行する
+12. 必要なら `overview.md` を作るか確認し、プロジェクトの目的・成果物・制約を聞く
 
 ## 新規プロジェクト作成モード
 
@@ -84,6 +99,8 @@ Rulesync は v15.0.1 の公式単体バイナリを Python ラッパーが取得
 ```bash
 uv run python tools/kernel/plan_check.py _workingspace/plans
 ```
+
+計画書・設計書には、進捗チェックボックスに加えて `バージョン: MAJOR.MINOR` と追記専用の `## 変更履歴` を置きます。計画を更新したら版を上げ、履歴の末尾へ変更内容を追加してから検査します。
 
 ## 会話言語とホーム config
 
@@ -119,6 +136,7 @@ uv run python tools/kernel/user_prefs.py show conversation.language
 .codex/
 .kilo/
 .agents/
+.grok/
 AGENTS.md
 CLAUDE.md
 

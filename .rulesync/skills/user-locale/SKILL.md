@@ -27,6 +27,14 @@ targets: ["*"]
 3. ホーム config の `conversation.language`
 4. OS locale 等（`user_prefs.py` が判定）
 
+## ツール切替時の扱い
+
+Codex、Claude Code、Cursor等を切り替えても、会話言語の希望を再入力しなくてよいように、解決結果を各ツール向け副本へ同期する。
+
+- チャットで明示された言語は、その会話での最優先指定として扱う。
+- プロジェクト全体の既定を変える場合だけ、ユーザーの了承を得て `.dna-kernel.local.toml` またはホーム config を更新する。
+- `grokcli` targetへは副本を生成できるが、実際のGrok Buildが `.grok/skills/` を読むことは導入先で確認してから対応範囲を案内する。
+
 ## 標準手順（正本）
 
 `python tools/rulesync.py generate` の**後**に sync し、会話言語設定の副本を最新状態にする。

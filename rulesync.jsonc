@@ -1,10 +1,11 @@
 {
   // 出力先の LLM ツール。不要なものは削除、追加したいものは追記する。
-  // 選択肢: "claudecode" | "cursor" | "copilot" | "codexcli" | "kilo"
+  // 選択肢: "claudecode" | "cursor" | "copilot" | "codexcli" | "grokcli" | "kilo"
   "targets": [
     "claudecode",
     "cursor",
-    "codexcli"
+    "codexcli",
+    "grokcli"
   ],
   // 使用する機能
   "features": [

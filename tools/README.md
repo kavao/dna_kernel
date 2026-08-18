@@ -3,6 +3,14 @@
 自己発展型ルールガバナンスを「実働」させるためのツールです。
 `kernel/` にコアツールと拡張例を収めてあります。
 
+`tools/` はルール体系そのものではなく、`.rulesync/` の正本に定めた生成・完了確認・証跡を実行する補助層です。Codex・Claude Code・Cursor等の間を移動しても、同じ正本と検査結果を使えるようにします。
+
+## 導入プロファイル
+
+- **Rule-only**: `.rulesync/` のルールとRulesync生成を使う
+- **Governance**: `output-discipline`、`plan-design-check`、`workspace-audit-log`を加える
+- **Full**: `project-onboarding`、`user-locale`、必要な補助処理まで使う
+
 ## コア（どのプロジェクトにも移植できる）
 
 プロジェクトの種類に関わらず使えるツールです。
@@ -58,3 +66,7 @@ uv run python tools/kernel/user_prefs.py sync
 - `novel_project_check.py` は `novel_code_allocate.py` と `novel_image_layout.py` を import します（3ファイルはセット）。
 - `kernel/workspace_audit_log.py` と `kernel/json_weighted_pick.py` は単独で動きます。
 - `kernel/user_prefs.py` も単独で動きます。
+- 主要なkernelツールはPython `>=3.11` の標準ライブラリだけで動作し、uvは任意です。
+- `python` と `uv run python` はどちらでも実行できます。`uv run python` は uv が管理するプロジェクト環境と `pyproject.toml` のPython条件（`>=3.11`）で実行し、`python` は素のインタプリタで実行します。`install_rulesync.py`・`rulesync.py` のように早期に使うツールは `python` を、`init.py` や `kernel/` 配下の運用ツールは `uv run python` を既定の例として示しています。
+- Rulesyncの初回取得・版更新にはネットワークが必要ですが、日常の生成にNode.js、npm、pnpm、Corepackは必要ありません。
+- 現在の標準targetは `claudecode`、`cursor`、`codexcli`、`grokcli` です。Rulesync 15.0.1は `grokcli` で `.grok/skills/` を生成しますが、実際のGrok Buildの読み込みは導入先で確認します。
