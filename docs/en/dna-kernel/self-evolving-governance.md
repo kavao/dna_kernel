@@ -30,6 +30,8 @@ Even if the LLM says it wrote something, do not treat the task as complete until
 
 Plans and design documents include a `## Progress` section and track progress with `- [ ]` / `- [x]` checkboxes. Leave work that is not started, in progress, partially complete, awaiting confirmation, or on hold as `[ ]`, with the remaining work explained. Use `[x]` only for completed work.
 
+Detailed checklists under sections such as `## Implementation phases` are also progress records. Mark completed detailed items `[x]`, leave unfinished or awaiting-confirmation items `[ ]`, and keep the detailed states consistent with the `## Progress` summary.
+
 After creating or updating a plan or design document, run the following machine check:
 
 ```bash
