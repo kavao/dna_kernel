@@ -30,6 +30,15 @@
   - `kernel/plan_check.py`
   - `## 進捗` / `## Progress` と `- [ ]` / `- [x]` の形式を検査
   - 依存: なし（標準ライブラリのみ）
+- **Rulesyncルーター定量測定**
+  - `kernel/rulesync_router_metrics.py`
+  - 正本・一時生成物のファイル数、行数、文字数、バイト数、SHA-256、ベースライン差分を測定
+  - 依存: なし（Python標準ライブラリのみ。`wc`、`awk`、`du` は使わない）
+- **dna_kernel導入検査**
+  - `kernel/dna_kernel_import.py`
+  - 既存リポジトリの `preflight`、`inventory`、`plan --dry-run`、`verify` を読み取り専用で実行
+  - `AGENTS.md` 索引の網羅率、targetごとのroot所有者、正本・生成物の分類を確認
+  - 依存: なし（Python標準ライブラリのみ）
 
 ## Rulesync 固定版ツールチェーン
 
@@ -49,6 +58,18 @@ python tools/rulesync.py generate
 python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
+
+ルーターと導入の確認:
+
+```bash
+uv run python tools/kernel/rulesync_router_metrics.py .rulesync/rules .rulesync/skills --base . --format json
+uv run python tools/kernel/dna_kernel_import.py preflight <target-root>
+uv run python tools/kernel/dna_kernel_import.py inventory <target-root> --format json
+uv run python tools/kernel/dna_kernel_import.py plan <target-root> --profile governance --dry-run
+uv run python tools/kernel/dna_kernel_import.py verify <target-root>
+```
+
+`dna_kernel_import.py` は計画を表示するだけで対象リポジトリへ書き込みません。ユーザー承認、バックアップ、注入、Rulesync生成、`generate --check`、監査ログの順序は `project-onboarding` に従います。
 
 ## 拡張例（小説プロジェクト向けの pre-work-check 実装）
 

@@ -42,6 +42,7 @@ rulesync が各 LLM ツールの設定ファイルへ変換します。
 
 | ファイル | 役割 | 導入先での配置先 |
 |----------|------|--------------------------|
+| `.rulesync/rules/agents.md` | 共有 `AGENTS.md` の索引・ルーター正本。詳細ルールを複製しない | `.rulesync/rules/agents.md` |
 | `.rulesync/rules/concepts.md` | 正本・副本・完了条件の概念定義 | `.rulesync/rules/concepts.md` |
 | `.rulesync/rules/rule-authoring.md` | ルール追加時の分類・置き場の作法 | `.rulesync/rules/rule-authoring.md` |
 | `.rulesync/rules/docs-writing.md` | docs/ ドキュメント記述ルール（`docs/**/*.md` に適用） | `.rulesync/rules/docs-writing.md` |
@@ -115,6 +116,8 @@ rulesync の管理外。人間が読む説明ドキュメント。
 | `tools/kernel/json_weighted_pick.py` | JSON リストからの重み付き乱数選択 | `tools/kernel/json_weighted_pick.py` |
 | `tools/kernel/user_prefs.py` | ホーム config 読取・会話言語・user-locale 副本 sync | `tools/kernel/user_prefs.py` |
 | `tools/kernel/plan_check.py` | 計画書・設計書の進捗チェックボックス検査 | `tools/kernel/plan_check.py` |
+| `tools/kernel/rulesync_router_metrics.py` | Python標準ライブラリによるルーター・生成物の定量測定 | `tools/kernel/rulesync_router_metrics.py` |
+| `tools/kernel/dna_kernel_import.py` | 既存リポジトリのpreflight・棚卸し・dry-run・verify（読み取り専用） | `tools/kernel/dna_kernel_import.py` |
 
 ホーム config（git 管理外）: `~/.config/dna-kernel/config.toml`。プロジェクト上書き: `.dna-kernel.local.toml`（gitignore）。
 

@@ -1,5 +1,5 @@
 ---
-targets: ["*"]
+targets: ["claudecode", "cursor"]
 description: "ルール・スキル・操作説明の配置と正本の作法"
 ---
 

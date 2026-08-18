@@ -7,6 +7,7 @@
 .agents/
 .grok/
 AGENTS.md
+!.rulesync/rules/agents.md
 CLAUDE.md
 
 # ===== ワークスペース（ローカル作業ファイル） =====
@@ -16,6 +17,7 @@ _workingspace/**
 !_workingspace/**/.gitkeep
 !_workingspace/plans/
 !_workingspace/plans/*.md
+_workingspace/tmp-tools/
 _backup/
 _old/
 

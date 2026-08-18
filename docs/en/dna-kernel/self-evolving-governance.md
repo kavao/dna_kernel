@@ -59,6 +59,31 @@ Using `workspace_audit_log.py` appends via a command that cannot alter existing 
 
 Repeating this makes the rule set **thinner as it grows**: concept text stays in one place; each skill only references it.
 
+## LLM-assisted, user-governed rule growth
+
+Users should not have to hand-classify Markdown rules every time. The LLM extracts repeated fixes, decisions, and project habits from conversation, implementation, and review, then checks scope and duplication against existing rules. The LLM must not save anything to Rulesync without approval.
+
+When a candidate appears, make the choice explicit:
+
+```text
+Should this decision be saved to Rulesync?
+Candidates: project rule / work skill / user setting / one-off (do not save)
+```
+
+Only after approval, update canonical sources according to `backup-before-edit` and `content-placement`, then run Rulesync generation, `generate --check`, relevant tests, and audit logging. Rejected or held candidates do not change persistent sources. “Learning” means saving approved knowledge to canonical sources and regenerating targets; it does not mean model retraining.
+
+## Index and layered rules
+
+`.rulesync/rules/agents.md` is the short entry point for shared `AGENTS.md`. It does not duplicate detailed rule bodies; it provides conditions, references, canonical sources, and completion checks. Keep one owner per shared entry point and explicitly separate standard rules with `targets` and `globs`.
+
+During injection, inventory existing rules, skills, and generated outputs with Python, then register each item in an index route, as always-applicable, or as an explicit exclusion. Check that standard rules do not enter the shared entry point and that combined-target generation does not change content through last-writer-wins behavior. Generation confirmation and confirmation that Claude Code, Codex, Cursor, or another tool actually loaded the result are separate evidence.
+
+## Temporary tools and compliant plugins
+
+Create one-off investigation or measurement helpers in a Python-standard-library-only temporary directory or the Git-ignored `_workingspace/tmp-tools/`. Promote a tool to `tools/kernel/` only after reuse, input/output contracts, ownership, tests, dependencies, and Windows/macOS/Linux behavior are established. Optional functionality outside the standard profiles goes under `tools/plugins/` only after approval.
+
+For promotion or plugin intake, verify the manifest, targets, canonical-source boundary, dependencies, tests, docs, and rollback. Do not make a tool permanent merely because it was convenient once, and do not add unapproved dependencies or generated outputs.
+
 ## Minimal kernel (what to transplant)
 
 | Element | File | Role |

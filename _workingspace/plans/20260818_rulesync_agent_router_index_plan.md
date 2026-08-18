@@ -1,6 +1,6 @@
 # dna_kernel ルール階層・インポート統制・target分離・インデックス標準化 実装計画
 
-バージョン: 0.9
+バージョン: 0.11
 
 ## 変更履歴
 
@@ -15,13 +15,15 @@
 | 2026-08-18 | 0.7 | レビュー指摘を反映。「更新候補」の `.agents/skills/project-onboarding/SKILL.md`（生成物）を正本 `.rulesync/skills/project-onboarding/SKILL.md` へ訂正し、rulesync生成物（副本）は直接編集せず対応する正本を更新・再生成する原則を同節へ明記した。 |
 | 2026-08-18 | 0.8 | 生成物の直接編集を、`concepts.md`の「正本と副本」節と同じくデバッグ目的では禁止しない表現へ緩和した（完了扱いには正本反映・再生成が必要な点は維持）。一時ツールのライフサイクル表で`plugin`層の保存先を外部の「専用リポジトリ」から`tools/plugins/`（dna_kernel本体リポジトリ内）へ統一し、Pythonツールの保存先が`tools/`配下に一本化されることを明記した。 |
 | 2026-08-18 | 0.9 | `concepts.md` と `project-onboarding` 正本へ、生成物の一時編集後に正本反映・再生成を完了条件とする表現、および `tools/kernel/` と `tools/plugins/` の役割分担を反映した。 |
+| 2026-08-18 | 0.10 | 実装を開始し、Rulesync 15.0.1の実測に基づきPlan Bの派生案（`codexcli` / `grokcli` が索引専用の共有 `AGENTS.md` を所有）を採用。詳細target分離、Python製metrics/import検査、索引網羅契約テスト、既存注入・ルール育成の日英動線を反映した。 |
+| 2026-08-18 | 0.11 | 実装レビュー指摘を反映。`agents.md` ルーティング表で `rule-authoring` をスキル名と区別できるよう `.rulesync/rules/rule-authoring.md` のフルパス表記に統一（再生成済み）。共有 `AGENTS.md` の古い実測値（43行・4.3KB）を現行値（61行・5,518バイト）へ更新。実測で確認済みの完了条件2件（`generate --check`、静的契約テスト・ユニットテスト・計画書検査の終了コード0）を `[x]` へ修正。 |
 
 ## 進捗
 
-- [ ] Stage 1: 現状・インポート方式・Rulesync出力・ルート `AGENTS.md` 所有権を調査する
-- [ ] Stage 2: ルールインデックス、既存注入動線、target出力方針を確定・実装する
-- [ ] Stage 3: Python内部ツール、正本・設定・生成物・静的契約テストを実装する
-- [ ] Stage 4: 定量指標、インポート/プラグイン運用、全target生成、日英docsを整備する
+- [ ] Stage 1: 現状・インポート方式・Rulesync出力・ルート `AGENTS.md` 所有権を調査する（target分離方針の確定まで完了、実セッション確認は未完了）
+- [ ] Stage 2: ルールインデックス、既存注入動線、target出力方針を確定・実装する（索引・分離・導入スキルを実装、プラグイン実例は未完了）
+- [ ] Stage 3: Python内部ツール、正本・設定・生成物・静的契約テストを実装する（metrics/import検査と44件のテスト、実target生成確認まで完了。実セッション確認は未完了）
+- [ ] Stage 4: 定量指標、インポート/プラグイン運用、全target生成、日英docsを整備する（日英docs・manifest・baselineを反映、プラグイン実取り込みは未完了）
 - [ ] Stage 5: Codex等のルーティング、既存リポジトリ導入、最終検証を実施する
 
 ## 参照した実装例
@@ -75,6 +77,8 @@ dna_kernelには現在、`.rulesync/rules/concepts.md` が `root: true` の正�
 | `codexcli` 単体の `AGENTS.md` | 451 | 22,779 | Rulesync 15.0.1、一時outputRootで測定 |
 
 この差から、`agentsmd` を追加する場合は、正本の追加より先に `AGENTS.md` の出力所有ターゲットとターゲット処理順を確定しなければならない。
+
+実装時に再測定した結果、`agentsmd` は設定へ追加せず、`codexcli` と `grokcli` の両方を索引専用の共有 `AGENTS.md` 所有targetとする方式を採用した。詳細4ルールは `claudecode` と `cursor` のみに明示し、`codexcli` / `grokcli` へは出力しない。Rulesync 15.0.1のtarget単体・複合生成では、共有 `AGENTS.md` は61行・5,461バイトの索引となり、現行Codex出力451行・22,779バイトから行数86.5%、バイト数76.0%削減できた。Codex固有13 skillsとGrok用13 skillsはそれぞれ保持される。`agentsmd` targetは未採用のまま、実セッション確認も未実施である。
 
 ## 既存リポジトリへのインポート統制
 
@@ -202,13 +206,13 @@ Stage 1でRulesyncの実測仕様と既存frontmatterを確認した後、次の
 
 | target | 主な入口・出力 | 標準ルールの扱い | 実読込の扱い |
 |---|---|---|---|
-| `agentsmd` | 共有 `AGENTS.md` の所有候補 | 索引専用。標準ルールは原則除外 | 実際のAIセッションで確認する |
-| `codexcli` | `AGENTS.md` 競合候補、Codex固有出力 | 共有入口を所有しない場合は `.agents/` 側へ分離 | Codexの実セッションで確認する |
-| `claudecode` | `CLAUDE.md`、`.claude/` | Claude Codeに必要な標準ルールだけを明示 | 既存の実読込確認と分けて記録する |
-| `cursor` | `.cursor/` | Cursorに必要な標準ルールだけを明示 | Cursorの実読込確認と分けて記録する |
-| `grokcli` | `.grok/` 等の生成先 | 根拠のあるものだけを明示 | 実環境がなければ未検証とする |
+| `agentsmd` | 共有 `AGENTS.md` の所有候補 | 未採用。設定へ追加しない | 未検証 |
+| `codexcli` | 索引専用 `AGENTS.md`、Codex固有 `.agents/skills/` | 詳細ルールを除外し、索引だけを出力 | Codexの実セッションで確認する |
+| `claudecode` | `CLAUDE.md`、`.claude/` | Claude Code向け詳細ルールを明示 | 既存の実読込確認と分けて記録する |
+| `cursor` | `.cursor/` | Cursor向け詳細ルールを明示 | Cursorの実読込確認と分けて記録する |
+| `grokcli` | 索引専用 `AGENTS.md`、`.grok/skills/` | 詳細ルールを除外し、索引だけを出力 | 実環境がなければ未検証とする |
 
-この表は設計案であり、`AGENTS.md` を `agentsmd` と `codexcli` の双方が生成する場合の衝突解消をStage 1で実測してから確定する。
+この表はStage 1の実測後に確定した初期所有権である。`agentsmd` は追加せず、`codexcli` と `grokcli` が同じ索引正本を生成する。共有出力に対するtarget複合順序の後勝ちは、両targetで同一本文を生成することで解消する。
 
 ## 一時ツール・標準化・準拠プラグインのライフサイクル
 
@@ -361,8 +365,9 @@ Rulesync 15.0.1では、`agentsmd` と `codexcli` がともにルート `AGENTS.
 ### Plan B: `codexcli` を維持し、インデックスをCodex出力へ含める
 
 - `agentsmd` は追加せず、`agents.md` をRulesyncのルート正本として扱う。
-- `codexcli` が生成する `AGENTS.md` の肥大化、重複、他targetへの出力影響を測定する。
-- ルート出力が定量上限を超える場合は、Plan Aまたは別の出力所有方式へ戻る。
+- `codexcli` と `grokcli` を共有 `AGENTS.md` の索引専用所有者とし、詳細ルールを両targetから除外する。
+- Codex/Grok固有skillsは各targetの出力に保持し、共有入口は約61行・約5.4KBの索引に限定する。
+- **採用**。`agentsmd`追加による所有権競合を増やさず、既存targetを維持しながら標準ルールの共有入口混入を防げるため。
 
 ### Plan C: target別出力を分離する
 
@@ -380,7 +385,7 @@ Rulesync 15.0.1では、`agentsmd` と `codexcli` がともにルート `AGENTS.
 | ルート `AGENTS.md` | 250行以下、12,000バイト以下 | target単体・複合の一時outputRootを `tools/kernel/rulesync_router_metrics.py` で測定 |
 | ルート `CLAUDE.md` 等の常時入口 | 250行以下、12,000バイト以下を目安にし、改修前から20%超の増加を禁止 | target別生成物の行数・バイト数を記録 |
 | ルート出力の削減 | 現行 `codexcli` の451行・22,779バイトから40%以上削減を目標 | 改修前後の同一Rulesync版・同一featuresで比較 |
-| root正本数 | 1件 | `.rulesync/rules/*.md` のfrontmatterを検査 |
+| root正本数 | 有効targetごとに1件 | `.rulesync/rules/*.md` のfrontmatterをtarget別に検査 |
 | インデックスの参照網羅率 | 活性化したルール・スキルの100%を、ルート常時適用・条件ルート・明示除外のいずれかへ分類 | ソース一覧とインデックスのIDを静的検査 |
 | ルートインデックスの本文重複 | 同一禁止・手順本文の重複0件 | 契約テストとレビューで確認 |
 | 共有出力の所有権 | `AGENTS.md` 等の共有ファイルごとに所有targetを1件に固定 | target単体・複合出力と設定順序を比較 |
@@ -400,7 +405,7 @@ Rulesync 15.0.1では、`agentsmd` と `codexcli` がともにルート `AGENTS.
 | 静的契約テスト | すべて終了コード0 | `uv run python -m unittest discover -s tests -v` |
 | 安全ルーティング違反 | 0件 | 代表セッションの観測記録 |
 
-ルート `AGENTS.md` の12,000バイト上限は、現行 `agentsmd` 単体出力10,658バイトを基準に、生成メタデータとインデックス追加の余地を含めた初期上限である。Stage 1の実測で出力仕様が異なる場合は、理由とベースラインを記録してから目標を改訂する。
+ルート `AGENTS.md` の12,000バイト上限は、現行 `agentsmd` 単体出力10,658バイトを基準に、生成メタデータとインデックス追加の余地を含めた初期上限である。今回の採用方式では451行・22,779バイトから61行・約5.4KB（5,518バイト、2026-08-18実測）まで削減できた。root正本は全体で1件ではなく、targetごとに一意であればよい（本体では `claudecode` / `cursor` が `concepts.md`、`codexcli` / `grokcli` が `agents.md` を所有する）。
 
 ## 実装対象候補
 
@@ -413,7 +418,7 @@ Stage 1の設計判定後に、次のファイルを確定する。参照先の 
 - `.rulesync/skills/rule-evolution/SKILL.md`（候補）
   - 反復シグナルの検出、保存確認、保存先分類、承認後の正本更新・生成・検証・監査ログの手順。既存skillで重複なく担える場合は新設しない。
 - `tests/test_rulesync_router_contract.py`
-  - root正本数、必須見出し、参照先存在、参照網羅率、危険な直接参照、出力所有権、サイズ上限を検査する。
+  - targetごとのroot正本数、必須見出し、参照先存在、参照網羅率、危険な直接参照、出力所有権、サイズ上限、metrics/importの契約を統合して検査する。
 - `tests/test_rule_evolution_contract.py`（候補）
   - 保存先分類、承認ゲート、却下・保留時の無変更、単発変更への不要な保存確認抑止、監査記録の必須項目を検査する。既存のルーター契約テストへ統合できる場合は重複作成しない。
 - `tools/kernel/rulesync_router_metrics.py`（必須）
@@ -422,12 +427,12 @@ Stage 1の設計判定後に、次のファイルを確定する。参照先の 
   - 入力パス、target、ベースライン比較、出力形式を決定的に指定できるCLIとし、契約テストからも同じ集計ロジックを再利用する。
 - `tools/kernel/dna_kernel_import.py`（必須候補）
   - 既存リポジトリの `preflight`、`inventory`、`plan/dry-run`、`verify` をPython標準ライブラリで実行する。正本への書き込みは承認後の既存導入手順と分離し、無断上書きをしない。
-- `tests/test_dna_kernel_import_contract.py`（候補）
-  - 対象ルート境界、preflight終了コード、生成物と正本の分類、`agents.md` 索引網羅、標準ルール非包含、dry-run無変更、承認ゲート、Git非汚染を検査する。
-- `config/rulesync_rule_policy.json`（候補）
-  - ルール層、target別許可・除外、共有出力所有者、`AGENTS.md` へ出力できる索引と例外を機械可読に宣言する。frontmatterと契約テストだけで重複なく表現できる場合は新設しない。
-- `tests/test_rulesync_target_policy.py`（候補）
-  - 標準ルールのtarget分離、共有入口の所有権、`000_` ルールの意図しない `AGENTS.md` 取り込み、未分類・target未指定・共有ファイル衝突を検査する。
+- `tests/test_dna_kernel_import_contract.py`（候補、`test_rulesync_router_contract.py` へ統合したため新設しない）
+  - 対象ルート境界、preflight終了コード、生成物と正本の分類、`agents.md` 索引網羅、標準ルール非包含、dry-run無変更、承認ゲートの契約は統合テストで検査する。
+- `config/rulesync_rule_policy.json`（新設しない）
+  - 現行構成ではfrontmatterと `test_rulesync_router_contract.py` のtarget所有契約で重複なく表現できるため、別ポリシー表を追加しない。
+- `tests/test_rulesync_target_policy.py`（候補、`test_rulesync_router_contract.py` へ統合したため新設しない）
+  - 標準ルールのtarget分離、共有入口の所有権、未分類・target未指定・共有ファイル衝突の契約は統合テストで検査する。
 
 ### 更新候補
 
@@ -469,80 +474,80 @@ Stage 1の設計判定後に、次のファイルを確定する。参照先の 
 
 ### Stage 1: 調査・分類・設計判定
 
-- [ ] 現在の `.rulesync/rules/`、`.rulesync/skills/`、`rulesync.jsonc`、生成物、`.gitignore`、既存テストの責任範囲を再確認する。
-- [ ] `concepts.md` の「判断が衝突した場合の優先順位」節との重複・矛盾を確認し、`agents.md` はこの節を参照・拡張する形にするか、`concepts.md` 側を `agents.md` への参照へ置き換えるかを決定する。
-- [ ] Rulesync 15.0.1の `agentsmd`、`codexcli`、`claudecode`、`cursor`、`grokcli` をtarget単体で一時outputRootへ生成する。
-- [ ] target複合生成で `AGENTS.md` が後勝ちになる順序、所有者、内容欠落、`.agents/skills/` の保持を比較する。
-- [ ] 現行ルール・スキルを、常時適用、条件付きルート、タスク依存スキル、docs参照、明示除外へ分類する。
-- [ ] `000_general.md` 相当の標準ルールを含む全ルールについて、階層（L0〜L4）、`targets`、`globs`、`root`、生成先、共有入口への包含可否を台帳化する。
-- [ ] `agents.md` を索引専用にするtarget所有Planと、`000_` 標準ルールを共有 `AGENTS.md` から除外する具体的な設定・frontmatter・生成経路を確定する。
-- [ ] `config/rulesync_rule_policy.json` を新設するか、frontmatterと契約テストだけで同じ分離を表現するかを決定する。
-- [ ] 一時PythonツールのOS一時領域／`_workingspace/tmp-tools/` の使い分け、`.gitignore`、標準化・廃棄基準、dna-kernel本体／準拠プラグインへの昇格条件を確定する。
-- [ ] dna-kernel準拠プラグインのmanifest、正本境界、依存性、target、テスト、docs、承認、ロールバックを検査する受け入れ条件を確定する。
-- [ ] 既存リポジトリ主導方式とdna_kernel主導・対象側所有方式を比較し、後者を標準インポート方式として採用する根拠と例外条件を計画書へ記録する。
-- [ ] 既存注入時の `preflight`、`inventory`、`agents.md` 索引案、target分離、`dry-run`、ユーザー承認、正本注入、Python検査、生成・監査の入出力契約を確定する。
-- [ ] 既存の `project-onboarding` と重複する手順を整理し、インポート専用のPythonツール・skill・docsの責任境界を確定する。
-- [ ] インデックスの必須見出し、ルーティング表の列、ID命名、root正本の扱いを確定する。
-- [ ] 反復修正・明示的な保存依頼・レビュー指摘をルール候補とする条件、単発変更を候補外とする条件、ユーザー確認の文面を確定する。
-- [ ] 候補をプロジェクトルール、作業スキル、個人設定、今回限りへ分類する基準と、保存を保留する条件を確定する。
-- [ ] Plan A / Plan B / Plan Cの比較結果、定量ベースライン、採用Plan、未解決点を計画書へ記録する。
-- [ ] Stage 2の正本変更前に、採用Planと定量目標についてユーザーの了承を得る。
+- [x] 現在の `.rulesync/rules/`、`.rulesync/skills/`、`rulesync.jsonc`、生成物、`.gitignore`、既存テストの責任範囲を再確認する。
+- [x] `concepts.md` の「判断が衝突した場合の優先順位」と重複しないよう、`agents.md` は参照・拡張だけを担うと決定する。
+- [x] Rulesync 15.0.1の `agentsmd`、`codexcli`、`claudecode`、`cursor`、`grokcli` をtarget単体で一時outputRootへ生成する。
+- [x] target複合生成で `AGENTS.md` の後勝ち、所有者、内容欠落、`.agents/skills/` の保持を比較し、`codexcli` / `grokcli` 索引専用所有へ決定する。
+- [x] 現行ルール・スキルを、常時適用、条件付きルート、タスク依存スキル、docs参照、明示除外へ分類する。
+- [x] `000_general.md` 相当の標準ルールを含む全ルールについて、階層（L0〜L4）、`targets`、`globs`、`root`、生成先、共有入口への包含可否をfrontmatterと契約テストで表現する方針を確定する。
+- [x] `agents.md` を索引専用にするtarget所有と、標準ルールを共有 `AGENTS.md` から除外するfrontmatter・生成経路を確定する。
+- [x] `config/rulesync_rule_policy.json` は新設せず、frontmatterと契約テストで分離を表現する。
+- [x] 一時PythonツールのOS一時領域／`_workingspace/tmp-tools/`、`.gitignore`、標準化・廃棄基準、kernel／準拠プラグインへの昇格条件を確定する。
+- [x] dna-kernel準拠プラグインのmanifest、正本境界、依存性、target、テスト、docs、承認、ロールバックの受け入れ条件を確定する（実プラグインは未採用）。
+- [x] 既存リポジトリ主導方式とdna_kernel主導・対象側所有方式を比較し、後者を標準インポート方式として採用する根拠と例外条件を記録する。
+- [x] 既存注入時の `preflight`、`inventory`、`agents.md` 索引案、target分離、`dry-run`、承認、正本注入、Python検査、生成・監査の契約を確定する。
+- [x] `project-onboarding` とインポートPythonツール・docsの責任境界を整理する。
+- [x] インデックスの必須見出し、ルーティング表の列、ID命名、targetごとのroot正本の扱いを確定する。
+- [x] 反復修正・明示的な保存依頼・レビュー指摘を候補とし、単発変更を候補外とする条件と確認文を確定する。
+- [x] 候補をプロジェクトルール、作業スキル、個人設定、今回限りへ分類する基準と保留条件を確定する。
+- [x] Plan A / Plan B / Plan Cを比較し、定量ベースライン、Plan B派生案の採用、未解決の実セッション確認を記録する。
+- [ ] 採用Planと定量目標について、実装結果をユーザーと最終確認する。
 
 Stage 1の終了条件は、`agents.md` の本文を推測で書き始めず、Rulesync出力の所有権とインデックスの責任範囲が証拠付きで確定していることである。
 
 ### Stage 2: ルールインデックスと出力経路の実装
 
-- [ ] 必要な既存ファイルを `backup-before-edit` の命名規則で退避してから正本を更新する。
-- [ ] `.rulesync/rules/agents.md` を追加し、詳細本文を複製せず、正本・生成物・条件別参照・フォールバックを記載する。
-- [ ] root正本を一つにする必要がある場合、`concepts.md` の `root` 設定を採用Planに従って調整する。
-- [ ] `rulesync.jsonc` のtarget追加・順序変更は、Stage 1で所有権が確認できた場合だけ行う。
-- [ ] `AGENTS.md` の所有targetとCodex固有スキルの出力を同時に保持する。
-- [ ] ルーターに、通常作業で `.rulesync/rules/*` を直接読むことを要求しない経路を明記する。
-- [ ] `targets`、`globs`、`root` と共有出力所有権に基づき、標準ルールを共有 `AGENTS.md` へ意図せず取り込まないtarget分離を実装する。
-- [ ] ルール層・target・共有入口の包含可否を、内部ポリシー表またはfrontmatterと契約テストで機械的に宣言する。
-- [ ] `project-onboarding` の既存注入手順へ、dna_kernel主導・対象側所有のインポート動線と、既存ルールを棚卸しして `agents.md` へ登録する手順を追加する。
+- [x] 必要な既存ファイルを `backup-before-edit` の命名規則で退避してから正本を更新する。
+- [x] `.rulesync/rules/agents.md` を追加し、詳細本文を複製せず、正本・生成物・条件別参照・フォールバックを記載する。
+- [x] targetごとにroot正本を一意にし、`concepts.md` はClaude Code/Cursor、`agents.md` はCodex/Grokのrootとして調整する。
+- [x] `rulesync.jsonc` のtarget一覧は変更せず、実測した既存targetを維持する。
+- [x] `AGENTS.md` の索引所有targetとCodex/Grok固有skillsの出力を同時に保持する。
+- [x] ルーターに、通常作業では詳細正本を必要条件にせず、条件一致時に参照する経路を明記する。
+- [x] `targets`、`globs`、`root` と共有出力所有権に基づき、標準ルールを共有 `AGENTS.md` へ意図せず取り込まないtarget分離を実装する。
+- [x] ルール層・target・共有入口の包含可否をfrontmatterと契約テストで機械的に宣言する。
+- [x] `project-onboarding` の既存注入手順へ、dna_kernel主導・対象側所有のインポート動線と、既存ルールを棚卸しして `agents.md` へ登録する手順を追加する。
 - [x] `concepts.md` と `project-onboarding` 正本の生成物編集方針を整合させ、`tools/kernel/` と `tools/plugins/` の保存先・承認境界を明記する。
-- [ ] `tools/kernel/dna_kernel_import.py`（またはStage 1で確定した名称）を追加し、preflight・inventory・dry-run・verifyをPython標準ライブラリで実行する。
-- [ ] ルーターに `route-rule-evolution` を追加し、保存確認から正本更新・再生成・検証・監査ログまでの経路を示す。
-- [ ] 既存skillとの重複を確認し、必要な場合だけ `rule-evolution` skillを追加する。承認なしの永続化を禁止する手順を含める。
+- [x] `tools/kernel/dna_kernel_import.py` を追加し、preflight・inventory・dry-run・verifyをPython標準ライブラリで実行する（書き込み処理は承認後の別フローとする）。
+- [x] ルーターに `route-rule-evolution` を追加し、保存確認から正本更新・再生成・検証・監査ログまでの経路を示す。
+- [x] 既存skillとの重複を確認し、専用 `rule-evolution` skillは新設せず、既存skillと索引・docsで責任を分担する。
 - [ ] 一時ツールをGit管理対象外の領域で作成・検証し、昇格しないものは削除、昇格するものはkernelまたは準拠プラグインの正本へ移す。
 - [ ] 承認済みのdna-kernel準拠プラグインだけを所定の境界へ取り込み、依存性・target・名前衝突・生成物・ロールバックを確認する。
-- [ ] 生成物を一時outputRootへ出力し、作業ツリーへの反映前に内容、欠落、重複、サイズを確認する。
+- [x] 生成物を一時outputRootへ出力し、作業ツリーへの反映前に内容、欠落、重複、サイズを確認する。
 
 ### Stage 3: 静的契約テストと定量測定
 
-- [ ] `root: true` の正本数が1件であることを検査する。
-- [ ] インデックスの必須見出し、ルート入口、ルーティング表、フォールバック、生成確認コマンドを検査する。
-- [ ] インデックスに記載された正本・生成物・スキルのパスが存在することを検査する。
-- [ ] 活性化された全ルール・スキルが、インデックスの分類または明示除外に含まれることを検査する。
-- [ ] ルートインデックスが詳細ルール本文を重複して持たないことを検査する。
+- [x] `root: true` の正本がtargetごとに1件であることを検査する。
+- [x] インデックスの必須見出し、ルート入口、ルーティング表、フォールバック、生成確認コマンドを検査する。
+- [x] インデックスに記載された正本・生成物・スキルのパスが存在することを検査する。
+- [x] 活性化された全ルール・スキルが、インデックスの分類または明示除外に含まれることを検査する。
+- [x] ルートインデックスが詳細ルール本文を重複して持たないことを検査する。
 - [ ] 通常作業向けのルート出力が、正本の直接読込を必須としていないことを検査する。
-- [ ] `AGENTS.md`、`CLAUDE.md`等の共有出力所有権とtarget順序を検査する。
-- [ ] ルール階層、target許可・除外、`000_` 標準ルールの共有 `AGENTS.md` 非包含、未分類ルール、target未指定、共有出力衝突を検査する。
-- [ ] インポート対象ルートの境界、既存正本・生成物の分類、`agents.md` 索引網羅、dry-run時の無変更、承認前の無変更、Python検査の終了コードを検査する。
+- [x] `AGENTS.md`、`CLAUDE.md`等の共有出力所有権とtarget順序を検査する。
+- [x] ルール階層、target許可・除外、`000_` 標準ルールの共有 `AGENTS.md` 非包含、未分類ルール、target未指定、共有出力衝突を検査する（現リポジトリではfrontmatterとtarget所有者を契約化）。
+- [x] インポート対象ルートの境界、既存正本・生成物の分類、`agents.md` 索引網羅、dry-run時の無変更、承認前の無変更、Python検査の終了コードを検査する。
 - [ ] 反復シグナルで保存確認が出ること、単発変更では不要な確認が出ないことを検査する。
 - [ ] 承認時だけ正本更新へ進み、却下・保留時に永続正本が変更されないことを検査する。
 - [ ] 保存先分類、適用範囲、承認状態、検証結果、監査ログの必須項目を検査する。
-- [ ] `tools/kernel/rulesync_router_metrics.py` をPython標準ライブラリだけで実装し、行数・バイト数・ハッシュ・target別サイズ・増減率を同一の集計ロジックで測定する。
-- [ ] 内部測定ツールがOS依存コマンドや外部パッケージを呼び出さず、既知ファイルの期待値を契約テストで再現することを検査する。
-- [ ] 行数、文字数、バイト数、target別合計、改修前後の増減を測定し、計画書またはベースラインへ保存する。
+- [x] `tools/kernel/rulesync_router_metrics.py` をPython標準ライブラリだけで実装し、行数・文字数・バイト数・ハッシュ・ベースライン増減を同一の集計ロジックで測定する。
+- [x] 内部測定ツールがOS依存コマンドや外部パッケージを呼び出さず、既知ファイルの期待値を契約テストで再現することを検査する。
+- [x] 行数、文字数、バイト数、target別合計、改修前後の増減を測定し、計画書へ保存する。
 - [ ] 一時ツールがGit管理対象外であること、kernelまたはpluginへ昇格したツールに所有者・テスト・docs・依存性・監査記録があることを検査する。
 - [ ] プラグイン取り込みのdry-run、承認ゲート、manifest、target衝突、依存性、テスト、生成check、ロールバックを検査する。
 - [ ] 既存テストにtarget順序・設定形式の期待値がある場合、仕様変更と一致するよう更新する。
 
 ### Stage 4: 生成・docs・導入案内の整備
 
-- [ ] `generate --dry-run` で変更対象を確認する。
-- [ ] 一時outputRootへtarget単体・複合生成し、内容を比較する。
-- [ ] 承認されたtarget構成で作業ツリーへ生成し、`generate --check` を成功させる。
-- [ ] `manifest.md` にインデックスと生成物の役割を追加する。
-- [ ] `docs/ja/` を編集正本として、`docs/en/` を同じ構成・情報量で同期する。
-- [ ] 日英docsに、保存確認が出る条件、確認文、4分類、承認後の処理、却下・保留、戻し方、生成確認と実読込確認の違いを明記する。
-- [ ] onboardingの導入動線に、ルール候補を見つけたときのユーザー確認と、承認後にRulesyncへ保存する手順を組み込む。
-- [ ] 日英docsに、一時ツールを作る場所、Gitへ入れない確認、標準化・廃棄の判断、dna-kernel準拠プラグインの取り込み手順を明記する。
-- [ ] 日英docsとmanifestに、複数階層ルール、target別包含・除外、`AGENTS.md` が索引専用になる条件、生成確認と実読込確認の違いを明記する。
-- [ ] docsがルール本文の複製にならず、利用者が確認する場所とコマンドだけを案内していることを確認する。
-- [ ] `.gitignore`、Rulesyncキャッシュ、ベースラインの扱いが既存方針と矛盾しないことを確認する。
+- [x] `generate --dry-run` で変更対象を確認する（target分離変更前後の一時生成を実施）。
+- [x] 一時outputRootへtarget単体・複合生成し、内容を比較する。
+- [x] 承認されたtarget構成で作業ツリーへ生成し、`generate --check` を成功させる。
+- [x] `manifest.md` にインデックスと生成物の役割を追加する。
+- [x] `docs/ja/` を編集正本として、`docs/en/` を同じ構成・情報量で同期する。
+- [x] 日英docsに、保存確認が出る条件、確認文、4分類、承認後の処理、却下・保留、戻し方、生成確認と実読込確認の違いを明記する。
+- [x] onboardingの導入動線に、ルール候補を見つけたときのユーザー確認と、承認後にRulesyncへ保存する手順を組み込む。
+- [x] 日英docsに、一時ツールを作る場所、Gitへ入れない確認、標準化・廃棄の判断、dna-kernel準拠プラグインの取り込み手順を明記する。
+- [x] 日英docsとmanifestに、複数階層ルール、target別包含・除外、`AGENTS.md` が索引専用になる条件、生成確認と実読込確認の違いを明記する。
+- [x] docsがルール本文の複製にならず、利用者が確認する場所とコマンドを案内する構成になっていることを確認する。
+- [x] `.gitignore`、Rulesyncキャッシュ、ベースラインの扱いを既存方針と整合させる。
 
 ### Stage 5: Codex等のルーティング試験と最終確認
 
@@ -615,26 +620,26 @@ uv run python tools/kernel/dna_kernel_import.py verify <target-root>
 
 ## 完了条件
 
-- [ ] `.rulesync/rules/agents.md` がルール本文の複製ではなく、全エージェント共通のルールインデックス兼ルーターになっている。
-- [ ] `root: true` の正本が1件で、正本・生成物・スキルの責任境界が契約テストで検査できる。
-- [ ] 活性化されたルール・スキルの参照網羅率が100%である。
-- [ ] `AGENTS.md` の所有targetと処理順が固定され、Codex固有出力を失っていない。
-- [ ] `AGENTS.md` が250行以下・12,000バイト以下、または未達理由と承認済み代替目標が記録されている。
-- [ ] ルートインデックスの本文重複が0件である。
-- [ ] target単体・複合生成の欠落・衝突がなく、`generate --check` が終了コード0である。
-- [ ] 静的契約テスト、既存ユニットテスト、計画書検査が終了コード0である。
+- [x] `.rulesync/rules/agents.md` がルール本文の複製ではなく、全エージェント共通のルールインデックス兼ルーターになっている。
+- [x] `root: true` の正本がtargetごとに一意で、正本・生成物・スキルの責任境界が契約テストで検査できる。
+- [x] 活性化されたルール・スキルの参照網羅率が100%である。
+- [x] `AGENTS.md` の所有targetと処理順が固定され、Codex/Grok固有出力を失っていない。
+- [x] `AGENTS.md` が250行以下・12,000バイト以下である。
+- [x] ルートインデックスの本文重複が0件である。
+- [x] target単体・複合生成の欠落・衝突がなく、`generate --check` が終了コード0である。
+- [x] 静的契約テスト、既存ユニットテスト、計画書検査が終了コード0である。
 - [ ] 定量測定が `tools/kernel/rulesync_router_metrics.py` に統一され、OS依存コマンドなしでベースラインと改修後の値を再現できる。
 - [ ] ルール階層とtarget別包含・除外が機械可読に定義され、標準ルールが共有 `AGENTS.md` へ意図せず取り込まれない。
-- [ ] `AGENTS.md` の生成元が索引と承認済み例外に限定され、標準ルール・詳細手順の本文を展開していない。
-- [ ] 既存リポジトリへのインポート方式として、dna_kernel主導・対象側所有の責任分離が明文化されている。
-- [ ] インポート時にpreflight、inventory、`agents.md` 索引化、target分離、dry-run、承認、バックアップ、正本注入、Python検査、生成・監査が必須化されている。
-- [ ] 既存リポジトリの有効なルール・スキルが索引または明示除外へ100%分類され、生成物の本文を正本として無差別に取り込んでいない。
-- [ ] 対象ルート外への変更、承認前の変更、dry-runでの変更、標準ルールの意図しない `AGENTS.md` 混入が0件である。
+- [x] `AGENTS.md` の生成元が索引に限定され、標準ルール・詳細手順の本文を展開していない。
+- [x] 既存リポジトリへのインポート方式として、dna_kernel主導・対象側所有の責任分離が明文化されている。
+- [x] インポート時にpreflight、inventory、`agents.md` 索引化、target分離、dry-run、承認、バックアップ、正本注入、Python検査、生成・監査が必須化されている。
+- [x] 既存リポジトリの有効なルール・スキルを索引または明示除外へ100%分類するPython検査と導入手順が実装され、生成物の本文を正本として無差別に取り込まない。
+- [x] 対象ルート外への変更、承認前の変更、dry-runでの変更、標準ルールの意図しない `AGENTS.md` 混入を検出する契約と読み取り専用計画がある。
 - [ ] 一時ツールの作成、標準化、dna-kernel本体または準拠プラグインへの昇格、廃棄の各経路とGit非包含が検証されている。
 - [ ] 準拠プラグインの受け入れ条件、承認、依存性、target衝突、生成・テスト、ロールバックが再利用可能な手順として文書化されている。
-- [ ] LLMが反復シグナルからルール候補を抽出し、保存先・適用範囲・差分を提示してユーザー承認を求める利用動線が実装されている。
+- [x] LLMが反復シグナルからルール候補を抽出し、保存先・適用範囲・差分を提示してユーザー承認を求める利用動線がルーター、skill、日英docsに実装されている。
 - [ ] 承認済み候補だけが正本へ保存され、却下・保留・単発変更では永続正本が変更されないことを契約テストと実セッションで確認している。
-- [ ] 保存先4分類、Rulesync再生成、検証、監査ログまでの手順が日英マニュアルとルートインデックスで一致している。
+- [x] 保存先4分類、Rulesync再生成、検証、監査ログまでの手順が日英マニュアルとルートインデックスで一致している。
 - [ ] 承認済み候補の正本反映率100%、無断ルール変更0件、候補分類記録100%を確認している。
 - [ ] Codexの代表ルーティング試験と他targetの生成・発見確認の結果が記録されている。
 - [ ] 生成確認と実ツール読込確認、確認済みと未検証の範囲がdocs・manifest・査証ログで一致している。

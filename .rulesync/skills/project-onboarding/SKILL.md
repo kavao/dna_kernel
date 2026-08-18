@@ -109,6 +109,34 @@ README.md は触らず、dna_kernel の説明は docs/ja/dna-kernel/（正本）
 標準プロファイル外の tools/plugins/ も取り込みますか？取り込む場合は、依存性・target・テスト・ロールバックを別途確認します。
 ```
 
+### 既存リポジトリの棚卸しとインポート統制
+
+既存注入では、対象リポジトリをdna_kernelの導入先として明示的に確定し、dna_kernel主導で調査・計画を行う。導入後の正本は対象リポジトリが所有する。上位monorepoや別のGitルートへ自動的に広げない。
+
+書き込み前に、次の読み取り専用コマンドを対象ルートで実行する。
+
+```bash
+uv run python tools/kernel/dna_kernel_import.py preflight <target-root>
+uv run python tools/kernel/dna_kernel_import.py inventory <target-root> --format json
+uv run python tools/kernel/dna_kernel_import.py plan <target-root> --profile governance --dry-run
+```
+
+既存の `AGENTS.md`、`CLAUDE.md`、`.cursor/`、`.claude/` 等は、正本か生成物かを棚卸しして分類する。分類できないものはコピーせず保留する。既存ルール・スキルは、`.rulesync/rules/agents.md` のroute、常時適用、または明示除外のいずれかへ登録し、標準ルールを共有 `AGENTS.md` へ無差別に取り込まない。`targets`、`globs`、`root`、共有入口の所有targetを同時に確認する。
+
+LLMは、採用・統合・参照化・除外・保留の判断理由と、生成物・依存性・テスト・ロールバックへの影響をdry-run結果として提示する。ユーザー承認前は正本、設定、生成物を変更しない。承認後に限り、`backup-before-edit` で退避して最小範囲を注入し、生成・検査・監査を行う。
+
+また、同じ修正や判断が繰り返された場合は、LLMが「この内容をrulesyncのルールまたはスキルへ保存しますか？」と確認する。承認された場合だけ対象側の正本へ保存し、却下・保留なら今回限りとして永続化しない。モデル再訓練や無断の自律変更を「学習」と呼ばない。
+
+インポート完了時は次を実行する。
+
+```bash
+uv run python tools/kernel/dna_kernel_import.py verify <target-root>
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate --check
+```
+
+`verify` は、索引網羅率、targetごとのroot所有者、標準ルールの共有入口分離を確認する。実際のAIツールが読み込んだことは、Rulesyncの生成成功とは別の実読込確認として記録する。
+
 了承後の流れ:
 
 1. `docs/ja/dna-kernel/` に説明文書を置き、同パスで `docs/en/dna-kernel/` に英訳を同期する。

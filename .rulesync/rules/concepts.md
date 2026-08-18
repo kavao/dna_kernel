@@ -1,5 +1,5 @@
 ---
-targets: ["*"]
+targets: ["claudecode", "cursor"]
 root: true
 description: "自己発展型ルールガバナンスの概念正本"
 ---

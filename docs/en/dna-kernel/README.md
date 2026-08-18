@@ -15,14 +15,16 @@ Status per AI tool:
 
 | Tool | Rulesync target | Generation | Actual consumption |
 |---|---|---|---|
-| Claude Code | `claudecode` | Supported | Confirmed* |
-| Cursor | `cursor` | Supported (Rulesync standard target) | Not verified |
-| Codex CLI | `codexcli` | Supported (Rulesync standard target) | Not verified |
-| Grok Build | `grokcli` | Supported (generates `.grok/skills/`) | Not verified (verify in the host repository) |
+| Claude Code | `claudecode` | `CLAUDE.md` and `.claude/` | Confirmed* |
+| Cursor | `cursor` | `.cursor/` | Not verified |
+| Codex CLI | `codexcli` | Index-only `AGENTS.md` and `.agents/skills/` | Not verified |
+| Grok Build | `grokcli` | Index-only `AGENTS.md` and `.grok/skills/` | Not verified (verify in the host repository) |
 
 \* Confirmed as of 2026-08-18: the Claude Code session that authored this table is itself running on the generated `CLAUDE.md` (this session's `CLAUDE.md` and `.claude/rules/` were regenerated to include these edits; recorded in `_workingspace/log/202608.md`). Verify again in other host repositories.
 
 Being able to generate a file is not the same as a tool actually reading it. Review this table whenever a target is added or updated.
+
+The shared `AGENTS.md` generated for Codex CLI and Grok Build is an index, not a concatenation of detailed rules. It routes to the canonical rules and skills under `.rulesync/`. Claude Code and Cursor receive detailed rules through explicitly targeted outputs. This prevents standard rules from being pulled into a shared entry point by target order and makes entry size and target ownership measurable.
 
 ## What it provides
 
@@ -33,6 +35,8 @@ Being able to generate a file is not the same as a tool actually reading it. Rev
 | Work history can be rewritten | Keep append-only audit logs | `_workingspace/log/` |
 | Detailed plan status drifts | Check `[ ]` / `[x]`, versions, and change history | `_workingspace/plans/` |
 | Each tool requires a separate environment | Generate with a Python-standard-library-centered setup | `tools/`, `config/` |
+| Existing knowledge is scattered across a repository | Inventory it during injection and register it in the `AGENTS.md` index or explicitly exclude it | `dna_kernel_import.py`, `.rulesync/rules/agents.md` |
+| Users have to hand-maintain every new rule | Let the LLM organize a candidate and ask whether to save it to Rulesync before updating canonical sources | `self-evolving-governance.md` |
 
 ## Adoption profiles
 
@@ -71,7 +75,8 @@ dna_kernel/
   manifest.md                ← file roles and transplant paths
   rulesync.jsonc             ← rulesync config (targets, features)
   .rulesync/
-    rules/                   ← canonical concepts and governance rules
+    rules/                   ← canonical index, concepts, and governance rules
+      agents.md              ← thin shared AGENTS.md entry and router
     skills/                  ← LLM execution procedures
   docs/
     README.md                ← documentation index (EN links first)
@@ -86,6 +91,8 @@ dna_kernel/
     kernel/
       workspace_audit_log.py
       json_weighted_pick.py
+      rulesync_router_metrics.py
+      dna_kernel_import.py
 ```
 
 ## README handling
@@ -112,6 +119,18 @@ python tools/rulesync.py generate
 python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
+
+Measure the router and plan an existing-repository import:
+
+```bash
+uv run python tools/kernel/rulesync_router_metrics.py .rulesync/rules .rulesync/skills --base . --format json
+uv run python tools/kernel/dna_kernel_import.py preflight <target-root>
+uv run python tools/kernel/dna_kernel_import.py inventory <target-root> --format json
+uv run python tools/kernel/dna_kernel_import.py plan <target-root> --profile governance --dry-run
+uv run python tools/kernel/dna_kernel_import.py verify <target-root>
+```
+
+`dna_kernel_import.py` is read-only. It does not write to the host repository before approval; it reports preflight, inventory, index coverage, and dry-run results. After approval, proceed with backup, minimal canonical-source injection, generation, `generate --check`, and audit logging.
 
 Rulesync 15.0.1 is downloaded and verified by the Python wrapper. Node.js, npm, pnpm, and Corepack are not required for daily generation. The downloaded binary is stored under `.tools/` and is not tracked by Git.
 

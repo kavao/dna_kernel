@@ -16,14 +16,16 @@ dna_kernel 自体の詳しい説明は、この `docs/ja/dna-kernel/` 配下（�
 
 | ツール | Rulesync target | 生成 | 実際の読み込み |
 |---|---|---|---|
-| Claude Code | `claudecode` | 対応 | 確認済み※ |
-| Cursor | `cursor` | 対応（Rulesync標準ターゲット） | 未検証 |
-| Codex CLI | `codexcli` | 対応（Rulesync標準ターゲット） | 未検証 |
-| Grok Build | `grokcli` | 対応（`.grok/skills/` を生成） | 未検証（導入先で要確認） |
+| Claude Code | `claudecode` | `CLAUDE.md` と `.claude/` | 確認済み※ |
+| Cursor | `cursor` | `.cursor/` | 未検証 |
+| Codex CLI | `codexcli` | 索引専用の `AGENTS.md` と `.agents/skills/` | 未検証 |
+| Grok Build | `grokcli` | 索引専用の `AGENTS.md` と `.grok/skills/` | 未検証（導入先で要確認） |
 
 ※ 2026-08-18時点、この表を作成したClaude Codeセッション自身が、生成された `CLAUDE.md` を読み込んで動作していることで確認済みです（このセッションの`CLAUDE.md`・`.claude/rules/`はここまでの編集を反映して再生成済み。記録: `_workingspace/log/202608.md`）。他の導入先では改めて確認してください。
 
 「生成できる」ことと「実際にツールが読み込む」ことは別です。上表の状態は、targetを追加・更新するたびに見直してください。
+
+Codex CLIとGrok Buildが共有する `AGENTS.md` は、詳細ルールを連結する場所ではなく、`.rulesync/rules/agents.md` から必要な正本・skillへ進む索引です。Claude CodeとCursorには、targetを明示した詳細ルールを別出力します。これにより、標準ルールが共有入口へ後勝ちで混入することを防ぎ、入口の大きさとtarget別の責任範囲を測定できます。
 
 ## 導入で得られるもの
 
@@ -34,6 +36,8 @@ dna_kernel 自体の詳しい説明は、この `docs/ja/dna-kernel/` 配下（�
 | 作業履歴が書き換わる | 査証ログを追記専用で残す | `_workingspace/log/` |
 | 計画の詳細状態がずれる | `[ ]` / `[x]` と版・変更履歴を検査する | `_workingspace/plans/` |
 | 環境構築がツールごとに必要 | Python標準ライブラリ中心で生成する | `tools/`、`config/` |
+| 既存ルールの知見が分散する | 導入時に棚卸しし、`AGENTS.md` 索引へ登録または明示除外する | `dna_kernel_import.py`、`.rulesync/rules/agents.md` |
+| ルールをユーザーが手書きで整理し続ける | LLMが候補を整理し、保存先とrulesyncへの保存を確認してから正本へ反映する | `self-evolving-governance.md` |
 
 ## 導入プロファイル
 
@@ -71,8 +75,9 @@ dna_kernel/
   README.ja.md               ← short entry (Japanese, editorial source)
   manifest.md                ← 各ファイルの役割と移植先での置き場
   rulesync.jsonc             ← rulesync 設定（targets・features）
-  .rulesync/
-    rules/                   ← 概念・運用ルールの正本
+    .rulesync/
+    rules/                   ← 索引・概念・運用ルールの正本
+      agents.md              ← 共有AGENTS.mdの薄い入口・ルーター
     skills/                  ← LLM 向けの実行手順
   docs/
     README.md                ← ドキュメント入口（EN リンク先頭）
@@ -87,6 +92,8 @@ dna_kernel/
     kernel/
       workspace_audit_log.py
       json_weighted_pick.py
+      rulesync_router_metrics.py
+      dna_kernel_import.py
 ```
 
 ## README の扱い
@@ -113,6 +120,18 @@ python tools/rulesync.py generate
 python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
+
+ルーターの定量確認と既存リポジトリの導入計画:
+
+```bash
+uv run python tools/kernel/rulesync_router_metrics.py .rulesync/rules .rulesync/skills --base . --format json
+uv run python tools/kernel/dna_kernel_import.py preflight <target-root>
+uv run python tools/kernel/dna_kernel_import.py inventory <target-root> --format json
+uv run python tools/kernel/dna_kernel_import.py plan <target-root> --profile governance --dry-run
+uv run python tools/kernel/dna_kernel_import.py verify <target-root>
+```
+
+`dna_kernel_import.py` は読み取り専用です。承認前に既存リポジトリへ書き込まず、preflight・棚卸し・索引案・dry-runの結果を提示します。承認後はバックアップ、正本への最小注入、生成、`generate --check`、監査ログの順で進めます。
 
 Rulesync は v15.0.1 の公式単体バイナリを Python ラッパーで取得・検証します。日常の生成に Node.js、npm、pnpm、Corepack は必要ありません。取得物は `.tools/` に保存され、Git 管理されません。
 
