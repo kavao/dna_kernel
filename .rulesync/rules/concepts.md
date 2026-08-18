@@ -29,7 +29,7 @@ description: "自己発展型ルールガバナンスの概念正本"
 代表的な正本と生成物の対応:
 
 - `.rulesync/rules/`、`.rulesync/skills/` → 編集する正本
-- `.claude/`、`.cursor/`、`.codex/`、`.agents/`、`.grok/`、`AGENTS.md`、`CLAUDE.md` 等 → rulesync の生成物。直接編集せず、正本を直してから再生成する。
+- `.claude/`、`.cursor/`、`.codex/`、`.agents/`、`.grok/`、`AGENTS.md`、`CLAUDE.md` 等 → rulesync の生成物。通常は直接編集せず、デバッグ等で一時的に編集した場合も、対応する正本へ反映してから再生成・再エクスポートするまで完了扱いにしない。
 - `docs/ja/` → docs の編集正本、`docs/en/` → 表示用の同期副本
 
 **会話言語と書き込み正本の分離**: LLM とのチャット言語（ホーム config → `user-locale`）と、ファイルへの書き込み正本（`content-placement` + `rule-authoring` / `docs-writing`）は別軸。日本語で会話していても docs の編集正本は `docs/ja/`、表示用 EN 同期は `docs/en/` のまま。
@@ -164,7 +164,7 @@ description: "自己発展型ルールガバナンスの概念正本"
 
 - 既存ファイルの有無と役割を確認し、変更予定を提示して了承を得る。
 - ユーザーが注入先ディレクトリを明示した場合、そのディレクトリを注入先ルートとして扱う。
-- `.rulesync/`, `rulesync.jsonc`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/kernel/` を追加・統合の候補として扱う。
+- `.rulesync/`, `rulesync.jsonc`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/kernel/`（dna_kernelのコアツール）、`tools/plugins/`（Rule-only / Governance / Fullの標準範囲外にある任意の準拠プラグイン）を追加・統合の候補として扱う。
 - 既存 README はプロジェクト自身の入口として尊重し、必要な追記も確認後に行う。
 - rulesync 生成物は `.gitignore` に追加する。
 

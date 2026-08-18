@@ -15,7 +15,7 @@ targets: ["*"]
 
 - **Rule-only**: `.rulesync/` のルール正本、Rulesync設定・ラッパー、各AIツール向け生成設定
 - **Governance**: Rule-only に完了規律、計画検査、査証ログ、`_workingspace/` を追加
-- **Full**: Governance に `project-onboarding`、`user-locale`、必要な補助スキル・ツールを追加
+- **Full**: Governance に `project-onboarding`、`user-locale`、必要な補助スキル・ツールを追加。`tools/plugins/` の任意機能は標準プロファイル外として個別承認する。
 
 Codex、Claude Code、Cursor、Grok Build等を切り替えるときのルール・完了条件・作業状態の再説明を減らすことが導入効果である。Rulesync 15.0.1の標準targetには `grokcli` があり `.grok/skills/` を生成するが、実際のGrok Buildの読み込みは導入先で確認する。
 
@@ -87,6 +87,7 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 - `tools/install_rulesync.py`
 - `tools/rulesync.py`
 - `tools/kernel/`
+- `tools/plugins/`（標準プロファイル外の承認済み準拠プラグイン）
 - `_workingspace/`
 
 これらは、指定された注入先ルートの配下に置く。
@@ -94,6 +95,7 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 提示する内容:
 
 - 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `config/rulesync_toolchain.json`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/install_rulesync.py`, `tools/rulesync.py`, `tools/kernel/`
+- 個別承認が必要な追加候補: `tools/plugins/`（Rule-only / Governance / Fullの標準範囲外にある準拠プラグイン）
 - 追記する可能性があるファイル: `.gitignore`, `pyproject.toml`
 - 触らない方針: 既存 `README.md` は上書きしない
 - 取り込まない: `images/title.png`（dna_kernel 本体 README 用。注入先では不要）
@@ -104,13 +106,14 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 指定されたディレクトリを注入先ルートとして扱います。上位の monorepo ルートや Git ルートへは広げません。
 README.md は触らず、dna_kernel の説明は docs/ja/dna-kernel/（正本）と docs/en/dna-kernel/（英訳）に追加します。
 .rulesync/・rulesync.jsonc・tools/kernel/・_workingspace/・.gitignore の追加または統合を進めてよいですか？
+標準プロファイル外の tools/plugins/ も取り込みますか？取り込む場合は、依存性・target・テスト・ロールバックを別途確認します。
 ```
 
 了承後の流れ:
 
 1. `docs/ja/dna-kernel/` に説明文書を置き、同パスで `docs/en/dna-kernel/` に英訳を同期する。
 2. `.rulesync/` と `rulesync.jsonc` を追加または統合する。
-3. `tools/kernel/` に必要なツールを置く。
+3. `tools/kernel/` に必要なコアツールを置く。承認済みの任意プラグインがある場合だけ `tools/plugins/` に置く。
 4. `.gitignore` に rulesync 生成物と `_workingspace/` の扱いを追記する。
 5. `python tools/install_rulesync.py` で Rulesync 15.0.1 を取得・検証する。
 6. `python tools/rulesync.py generate --dry-run` を実行し、結果を提示する。
