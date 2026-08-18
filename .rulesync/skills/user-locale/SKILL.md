@@ -29,11 +29,13 @@ targets: ["*"]
 
 ## 標準手順（正本）
 
-`corepack pnpm dlx rulesync generate` の**後**に必ず sync する（`delete: true` で副本が消えるため）。
+`python tools/rulesync.py generate` の**後**に sync し、会話言語設定の副本を最新状態にする。
 
 ```bash
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
 

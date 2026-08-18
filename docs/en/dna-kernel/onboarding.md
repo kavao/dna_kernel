@@ -28,8 +28,11 @@ If that path is given, place the following under `packages/discord-bot/`:
 ```text
 .rulesync/
 rulesync.jsonc
+config/rulesync_toolchain.json
 docs/ja/dna-kernel/
 docs/en/dna-kernel/
+tools/install_rulesync.py
+tools/rulesync.py
 tools/kernel/
 _workingspace/
 ```
@@ -40,7 +43,7 @@ Principles:
 - Do not copy `images/title.png` into the host project; it is for the dna_kernel repository README title only
 - Review `.gitignore`, `pyproject.toml`, `tools/`, and `docs/` before appending
 - Put detailed dna_kernel docs in `docs/ja/dna-kernel/` (source) and sync `docs/en/dna-kernel/` (translation)
-- Add `.rulesync/`, `rulesync.jsonc`, and `tools/kernel/` as canonical sources and working tools
+- Add `.rulesync/`, `rulesync.jsonc`, `config/rulesync_toolchain.json`, `tools/install_rulesync.py`, `tools/rulesync.py`, and `tools/kernel/` as canonical sources and working tools
 - Ignore rulesync outputs (`.claude/`, `.cursor/`, `.codex/`, `.agents/`, `.kilo/`, `AGENTS.md`, `CLAUDE.md`)
 
 Recommended flow:
@@ -50,11 +53,12 @@ Recommended flow:
 3. Place docs in `docs/ja/dna-kernel/` and sync English under `docs/en/dna-kernel/`
 4. Add or merge `.rulesync/` and `rulesync.jsonc`
 5. Add required tools under `tools/kernel/`
-6. Update `.gitignore` for rulesync outputs and `_workingspace/`
-7. Run `corepack pnpm dlx rulesync generate --dry-run` and review the output
-8. After approval, run `corepack pnpm dlx rulesync generate`
-9. Run `uv run python tools/kernel/user_prefs.py sync` to regenerate conversation-language rules
-10. If needed, ask whether to create `overview.md` and gather project purpose, deliverables, and constraints
+6. Update `.gitignore` for rulesync outputs, the Rulesync cache, and `_workingspace/`
+7. Run `python tools/install_rulesync.py` to download and verify Rulesync 15.0.1
+8. Run `python tools/rulesync.py generate --dry-run` and review the output
+9. After approval, run `python tools/rulesync.py generate`
+10. Run `python tools/rulesync.py generate --check` and `uv run python tools/kernel/user_prefs.py sync`
+11. If needed, ask whether to create `overview.md` and gather project purpose, deliverables, and constraints
 
 ## New project setup
 
@@ -64,15 +68,22 @@ If not, ask before creating it, then confirm rulesync and uv setup after approva
 Basic commands:
 
 ```bash
-corepack enable
 uv run python init.py
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
 
-Running `corepack pnpm dlx rulesync` alone currently shows help only.
-Use the `generate` subcommand to produce outputs. Run `user_prefs.py sync` **after** `generate`.
+The Python wrapper downloads and verifies the official Rulesync 15.0.1 binary.
+Node.js, npm, pnpm, and Corepack are not required for daily generation. Use the `generate` subcommand to produce outputs, then run `generate --check` and `user_prefs.py sync` **after** `generate`.
+
+Check plan and design-document progress:
+
+```bash
+uv run python tools/kernel/plan_check.py _workingspace/plans
+```
 
 ## Conversation language and home config
 
@@ -119,6 +130,9 @@ _workingspace/**
 !_workingspace/plans/*.md
 _backup/
 _old/
+
+# pinned Rulesync cache (downloaded by the Python wrapper)
+.tools/
 
 # user-locale: project-local override
 .dna-kernel.local.toml

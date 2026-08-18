@@ -15,7 +15,7 @@
   "outputRoots": [
     "."
   ],
-  "delete": true,
+  "delete": false,
   "verbose": false,
   "silent": false
 }

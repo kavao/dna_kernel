@@ -60,8 +60,11 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 
 - `.rulesync/`
 - `rulesync.jsonc`
+- `config/rulesync_toolchain.json`
 - `docs/ja/dna-kernel/`
 - `docs/en/dna-kernel/`
+- `tools/install_rulesync.py`
+- `tools/rulesync.py`
 - `tools/kernel/`
 - `_workingspace/`
 
@@ -69,7 +72,7 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 
 提示する内容:
 
-- 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/kernel/`
+- 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `config/rulesync_toolchain.json`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/install_rulesync.py`, `tools/rulesync.py`, `tools/kernel/`
 - 追記する可能性があるファイル: `.gitignore`, `pyproject.toml`
 - 触らない方針: 既存 `README.md` は上書きしない
 - 取り込まない: `images/title.png`（dna_kernel 本体 README 用。注入先では不要）
@@ -88,10 +91,11 @@ README.md は触らず、dna_kernel の説明は docs/ja/dna-kernel/（正本）
 2. `.rulesync/` と `rulesync.jsonc` を追加または統合する。
 3. `tools/kernel/` に必要なツールを置く。
 4. `.gitignore` に rulesync 生成物と `_workingspace/` の扱いを追記する。
-5. `corepack pnpm dlx rulesync generate --dry-run` を実行し、結果を提示する。
-6. 了承後に `corepack pnpm dlx rulesync generate` を実行する。
-7. `uv run python tools/kernel/user_prefs.py sync` で会話言語副本を再生成する。
-8. 必要なら `overview.md` を作るか確認し、プロジェクト内容を聞く。
+5. `python tools/install_rulesync.py` で Rulesync 15.0.1 を取得・検証する。
+6. `python tools/rulesync.py generate --dry-run` を実行し、結果を提示する。
+7. 了承後に `python tools/rulesync.py generate` と `python tools/rulesync.py generate --check` を実行する。
+8. `uv run python tools/kernel/user_prefs.py sync` で会話言語副本を再生成する。
+9. 必要なら `overview.md` を作るか確認し、プロジェクト内容を聞く。
 
 ## 新規プロジェクト作成モード
 
@@ -120,7 +124,7 @@ README.md は触らず、dna_kernel の説明は docs/ja/dna-kernel/（正本）
 `overview.md` を作成する了承を得たら、次を確認する。
 
 ```bash
-corepack pnpm dlx rulesync --version
+python tools/install_rulesync.py
 uv --version
 ```
 
@@ -131,11 +135,12 @@ uv --version
 ```text
 rulesync または uv が未導入です。初期化に必要なので、こちらで導入してよいですか？
 実行予定:
-- corepack enable（未実行の場合）
 - uv の公式インストーラを実行
 - uv run python init.py
-- corepack pnpm dlx rulesync generate --dry-run
-- corepack pnpm dlx rulesync generate
+- python tools/install_rulesync.py
+- python tools/rulesync.py generate --dry-run
+- python tools/rulesync.py generate
+- python tools/rulesync.py generate --check
 - uv run python tools/kernel/user_prefs.py sync
 ```
 
@@ -148,22 +153,24 @@ rulesync または uv が未導入です。初期化に必要なので、こち�
 Windows PowerShell:
 
 ```powershell
-corepack enable
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 uv run python init.py
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
 
 macOS / Linux:
 
 ```bash
-corepack enable
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv run python init.py
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
 
@@ -234,7 +241,7 @@ dna_kernel 本体を直していると判断できる場合は、このスキル
 - `docs/ja/dna-kernel/` の説明を直す依頼
 - `tools/kernel/` や `init.py` を修正する依頼
 
-この場合は、既存ファイルを読んで直接修正し、必要に応じて `corepack pnpm dlx rulesync generate --dry-run` または `corepack pnpm dlx rulesync generate --check` で確認する。
+この場合は、既存ファイルを読んで直接修正し、必要に応じて `python tools/rulesync.py generate --dry-run` または `python tools/rulesync.py generate --check` で確認する。
 
 ## 関連
 

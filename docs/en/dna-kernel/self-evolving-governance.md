@@ -26,7 +26,21 @@ Even if the LLM says it wrote something, do not treat the task as complete until
 
 **Effect**: Prevents “shown in chat but not saved” and “production run before dry-run.”
 
-### 3. Append-only audit log
+### 3. Progress checks for plans and design documents
+
+Plans and design documents include a `## Progress` section and track progress with `- [ ]` / `- [x]` checkboxes. Leave work that is not started, in progress, partially complete, awaiting confirmation, or on hold as `[ ]`, with the remaining work explained. Use `[x]` only for completed work.
+
+After creating or updating a plan or design document, run the following machine check:
+
+```bash
+uv run python tools/kernel/plan_check.py _workingspace/plans
+```
+
+Pass a design-document file or directory as the argument when checking another location. Treat the work as complete only after confirming exit code 0.
+
+**Effect**: Remaining and completed work stays readable in one format across sessions and computers.
+
+### 4. Append-only audit log
 
 After work, append to `_workingspace/log/YYYYMM.md`. Overwrites and deletions are forbidden.
 Using `workspace_audit_log.py` appends via a command that cannot alter existing lines.
@@ -47,6 +61,7 @@ Repeating this makes the rule set **thinner as it grows**: concept text stays in
 |---------|------|------|
 | Concept source | `rules/concepts.md` | Unified definitions, prohibitions, completion conditions |
 | Rule authoring | `rules/rule-authoring.md` | How to add rules without duplication |
+| Plan/design check | `tools/kernel/plan_check.py` | Machine-check status formatting |
 | Audit log | `tools/kernel/workspace_audit_log.py` | Append-only work record |
 | Automated checks | `tools/kernel/novel_project_check.py` | Optional completion verification |
 

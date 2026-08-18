@@ -32,8 +32,12 @@ dna_kernel/
     README.md                ← ドキュメント入口（EN リンク先頭）
     en/dna-kernel/           ← 英語（表示デフォルト・対訳）
     ja/dna-kernel/           ← 日本語（編集正本）
+  config/
+    rulesync_toolchain.json  ← Rulesync 15.0.1 の固定資産・SHA-256
   tools/
     README.md
+    install_rulesync.py      ← 固定版バイナリの取得・検証
+    rulesync.py              ← 固定版バイナリの実行ラッパー
     kernel/
       workspace_audit_log.py
       json_weighted_pick.py
@@ -57,10 +61,14 @@ uv run python init.py
 ルール再生成:
 
 ```bash
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
+
+Rulesync は v15.0.1 の公式単体バイナリを Python ラッパーで取得・検証します。日常の生成に Node.js、npm、pnpm、Corepack は必要ありません。取得物は `.tools/` に保存され、Git 管理されません。
 
 査証ログ追記:
 

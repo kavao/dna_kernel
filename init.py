@@ -35,8 +35,10 @@ def init() -> None:
     print("  uv run python tools/kernel/user_prefs.py show conversation.language")
     print()
     print("ルール再生成の標準手順（generate の後に sync 必須）:")
-    print("  corepack pnpm dlx rulesync generate --dry-run")
-    print("  corepack pnpm dlx rulesync generate")
+    print("  python tools/install_rulesync.py")
+    print("  python tools/rulesync.py generate --dry-run")
+    print("  python tools/rulesync.py generate")
+    print("  python tools/rulesync.py generate --check")
     print("  uv run python tools/kernel/user_prefs.py sync")
 
 

@@ -29,6 +29,7 @@ rulesync が各 LLM ツールのスキル設定へ変換します。
 | `.rulesync/skills/project-context/SKILL.md` | プロジェクト文脈の要約・引き継ぎ | `.rulesync/skills/project-context/` |
 | `.rulesync/skills/project-onboarding/SKILL.md` | 新規作成・既存注入と overview.md 作成フロー | `.rulesync/skills/project-onboarding/` |
 | `.rulesync/skills/code-testing/SKILL.md` | コード変更時のテスト実行・デグレード防止 | `.rulesync/skills/code-testing/` |
+| `.rulesync/skills/plan-design-check/SKILL.md` | 計画書・設計書の進捗チェックボックス検査 | `.rulesync/skills/plan-design-check/` |
 | `.rulesync/skills/user-locale/SKILL.md` | 会話言語（ホーム config）と user-locale 副本 sync | `.rulesync/skills/user-locale/` |
 | `.rulesync/skills/content-placement/SKILL.md` | 執筆前の種類・正本・副本の判断 | `.rulesync/skills/content-placement/` |
 
@@ -37,6 +38,16 @@ rulesync が各 LLM ツールのスキル設定へ変換します。
 | ファイル | 役割 | 導入先での配置先 |
 |----------|------|--------------------------|
 | `rulesync.jsonc` | targets・features の指定 | プロジェクトルート |
+
+## 固定版 Rulesync ツールチェーン
+
+Rulesync は Node.js や npm に依存せず、Python ラッパーから固定版の公式単体バイナリを取得・検証して実行します。取得物は `.tools/` に置き、Git 管理しません。
+
+| ファイル | 役割 | 導入先での配置先 |
+|----------|------|--------------------------|
+| `config/rulesync_toolchain.json` | Rulesync 15.0.1 の資産・SHA-256・OS/CPU 対応表 | `config/rulesync_toolchain.json` |
+| `tools/install_rulesync.py` | 固定版バイナリの取得・ハッシュ・バージョン検証 | `tools/install_rulesync.py` |
+| `tools/rulesync.py` | 検証済みローカルバイナリの CLI ラッパー | `tools/rulesync.py` |
 
 ## ルート入口（dna_kernel 本体）
 
@@ -69,6 +80,7 @@ rulesync の管理外。人間が読む説明ドキュメント。
 | `tools/kernel/workspace_audit_log.py` | 査証ログ・日記への追記書き込み | `tools/kernel/workspace_audit_log.py` |
 | `tools/kernel/json_weighted_pick.py` | JSON リストからの重み付き乱数選択 | `tools/kernel/json_weighted_pick.py` |
 | `tools/kernel/user_prefs.py` | ホーム config 読取・会話言語・user-locale 副本 sync | `tools/kernel/user_prefs.py` |
+| `tools/kernel/plan_check.py` | 計画書・設計書の進捗チェックボックス検査 | `tools/kernel/plan_check.py` |
 
 ホーム config（git 管理外）: `~/.config/dna-kernel/config.toml`。プロジェクト上書き: `.dna-kernel.local.toml`（gitignore）。
 
@@ -85,6 +97,6 @@ rulesync の管理外。人間が読む説明ドキュメント。
 
 ## 最小セット（どれか1つから始めるなら）
 
-- **ルールだけ**: `.rulesync/rules/concepts.md` + `rulesync.jsonc` + `corepack pnpm dlx rulesync generate` 実行
+- **ルールだけ**: `.rulesync/rules/concepts.md` + `rulesync.jsonc` + `python tools/rulesync.py generate` 実行
 - **ログまで**: 上記に `tools/kernel/workspace_audit_log.py` を追加
 - **pre-work-check まで**: 上記にチェックスクリプトを追加（`novel_project_check.py` はその拡張例）

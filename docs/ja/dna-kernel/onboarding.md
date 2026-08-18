@@ -28,8 +28,11 @@ K:\共有\10_プログラム\node\grokbot_news\packages\discord-bot\
 ```text
 .rulesync/
 rulesync.jsonc
+config/rulesync_toolchain.json
 docs/ja/dna-kernel/
 docs/en/dna-kernel/
+tools/install_rulesync.py
+tools/rulesync.py
 tools/kernel/
 _workingspace/
 ```
@@ -40,7 +43,7 @@ _workingspace/
 - `images/title.png` は dna_kernel 本体 README 用のタイトル画像であり、注入先プロジェクトへは**取り込まない**
 - 既存の `.gitignore`, `pyproject.toml`, `tools/`, `docs/` は内容を確認してから追記する
 - dna_kernel の詳しい説明は `docs/ja/dna-kernel/`（編集正本）と `docs/en/dna-kernel/`（対訳）へ置く
-- `.rulesync/`, `rulesync.jsonc`, `tools/kernel/` を正本・実働ツールとして追加する
+- `.rulesync/`, `rulesync.jsonc`, `config/rulesync_toolchain.json`, `tools/install_rulesync.py`, `tools/rulesync.py`, `tools/kernel/` を正本・実働ツールとして追加する
 - rulesync 生成物（`.claude/`, `.cursor/`, `.codex/`, `.agents/`, `.kilo/`, `AGENTS.md`, `CLAUDE.md`）は ignore する
 
 推奨フロー:
@@ -50,11 +53,12 @@ _workingspace/
 3. `docs/ja/dna-kernel/` に説明文書を置き、`docs/en/dna-kernel/` に英訳を同期する
 4. `.rulesync/` と `rulesync.jsonc` を追加または統合する
 5. `tools/kernel/` に必要なツールを置く
-6. `.gitignore` に rulesync 生成物と `_workingspace/` の扱いを追記する
-7. `corepack pnpm dlx rulesync generate --dry-run` で生成内容を確認する
-8. 了承後に `corepack pnpm dlx rulesync generate` を実行する
-9. `uv run python tools/kernel/user_prefs.py sync` で会話言語副本を再生成する
-10. 必要なら `overview.md` を作るか確認し、プロジェクトの目的・成果物・制約を聞く
+6. `.gitignore` に rulesync 生成物、Rulesync キャッシュ、`_workingspace/` の扱いを追記する
+7. `python tools/install_rulesync.py` で Rulesync 15.0.1 を取得・検証する
+8. `python tools/rulesync.py generate --dry-run` で生成内容を確認する
+9. 了承後に `python tools/rulesync.py generate` を実行する
+10. `python tools/rulesync.py generate --check` と `uv run python tools/kernel/user_prefs.py sync` を実行する
+11. 必要なら `overview.md` を作るか確認し、プロジェクトの目的・成果物・制約を聞く
 
 ## 新規プロジェクト作成モード
 
@@ -64,15 +68,22 @@ _workingspace/
 導入の基本コマンド:
 
 ```bash
-corepack enable
 uv run python init.py
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
 
-`corepack pnpm dlx rulesync` だけでは、現在の rulesync ではヘルプが表示されるだけです。
-生成には `generate` サブコマンドを使います。`generate` の**後**に `user_prefs.py sync` を実行します。
+Rulesync は v15.0.1 の公式単体バイナリを Python ラッパーが取得・検証します。
+日常の生成には Node.js、npm、pnpm、Corepack は不要です。生成には `generate` サブコマンドを使い、`generate` の**後**に `generate --check` と `user_prefs.py sync` を実行します。
+
+計画書・設計書の進捗確認:
+
+```bash
+uv run python tools/kernel/plan_check.py _workingspace/plans
+```
 
 ## 会話言語とホーム config
 
@@ -119,6 +130,9 @@ _workingspace/**
 !_workingspace/plans/*.md
 _backup/
 _old/
+
+# Rulesync 固定版キャッシュ（Python ラッパーが取得）
+.tools/
 
 # user-locale: プロジェクト local 上書き
 .dna-kernel.local.toml

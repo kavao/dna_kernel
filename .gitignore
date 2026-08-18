@@ -29,6 +29,10 @@ __pycache__/
 # ===== Node.js =====
 node_modules/
 
+# ===== Rulesync 固定版キャッシュ =====
+# 公式単体バイナリは Python ラッパーが取得し、リポジトリには含めない
+.tools/
+
 # ===== 環境変数 =====
 .env
 .env.local

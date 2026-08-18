@@ -18,6 +18,29 @@
   - `kernel/user_prefs.py`
   - ホーム config: `~/.config/dna-kernel/config.toml`（git 管理外）
   - 依存: なし（標準ライブラリのみ、`tomllib`）
+- **計画書・設計書チェック（plan-design-check）**
+  - `kernel/plan_check.py`
+  - `## 進捗` / `## Progress` と `- [ ]` / `- [x]` の形式を検査
+  - 依存: なし（標準ライブラリのみ）
+
+## Rulesync 固定版ツールチェーン
+
+Rulesync 15.0.1 の公式単体バイナリを Python 標準ライブラリで取得・検証し、Node.js を使わずに実行します。
+
+- `config/rulesync_toolchain.json` — OS・CPU 別の資産、URL、SHA-256、キャッシュ先
+- `install_rulesync.py` — 初回取得、SHA-256 検証、`--version` 検証、`--force` 再取得
+- `rulesync.py` — 検証済みローカルバイナリへ CLI 引数と終了コードを透過
+- キャッシュ先: `.tools/rulesync/15.0.1/`（Git 管理外）
+
+日常の生成は次の順で行います。
+
+```bash
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
+uv run python tools/kernel/user_prefs.py sync
+```
 
 ## 拡張例（小説プロジェクト向けの pre-work-check 実装）
 
@@ -35,4 +58,3 @@
 - `novel_project_check.py` は `novel_code_allocate.py` と `novel_image_layout.py` を import します（3ファイルはセット）。
 - `kernel/workspace_audit_log.py` と `kernel/json_weighted_pick.py` は単独で動きます。
 - `kernel/user_prefs.py` も単独で動きます。
-

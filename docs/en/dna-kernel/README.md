@@ -31,8 +31,12 @@ dna_kernel/
     README.md                ← documentation index (EN links first)
     en/dna-kernel/           ← English (default display, translation)
     ja/dna-kernel/           ← Japanese (editorial source)
+  config/
+    rulesync_toolchain.json  ← pinned Rulesync 15.0.1 assets and SHA-256
   tools/
     README.md
+    install_rulesync.py      ← download and verify the pinned binary
+    rulesync.py              ← execute the pinned binary
     kernel/
       workspace_audit_log.py
       json_weighted_pick.py
@@ -56,10 +60,14 @@ uv run python init.py
 Regenerate rules:
 
 ```bash
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
+
+Rulesync 15.0.1 is downloaded and verified by the Python wrapper. Node.js, npm, pnpm, and Corepack are not required for daily generation. The downloaded binary is stored under `.tools/` and is not tracked by Git.
 
 Append an audit log entry:
 
