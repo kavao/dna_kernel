@@ -1,0 +1,31 @@
+{
+  "version": "15.0.1",
+  "release_base_url": "https://github.com/dyoshikawa/rulesync/releases/download/v15.0.1",
+  "platforms": {
+    "windows-x64": {
+      "asset": "rulesync-windows-x64.exe",
+      "sha256": "e8d25ac6111d7d24159439da68c22d922219c087eec808a66a3992ceb4aa64bc",
+      "cache_path": ".tools/rulesync/15.0.1/windows-x64/rulesync.exe"
+    },
+    "darwin-x64": {
+      "asset": "rulesync-darwin-x64",
+      "sha256": "917e100447621cfaea390cfc3e26f5f1cf84151554685c90644b9e3845d0cae1",
+      "cache_path": ".tools/rulesync/15.0.1/darwin-x64/rulesync"
+    },
+    "darwin-arm64": {
+      "asset": "rulesync-darwin-arm64",
+      "sha256": "bb1eedab590f4ef3075315dec1df27cebeb49debe545bd084f7746d7d330e4fc",
+      "cache_path": ".tools/rulesync/15.0.1/darwin-arm64/rulesync"
+    },
+    "linux-x64": {
+      "asset": "rulesync-linux-x64",
+      "sha256": "78663aee6d4892b63f5c56e46cd2e8f175901bb6cea2d7825172290d583e6701",
+      "cache_path": ".tools/rulesync/15.0.1/linux-x64/rulesync"
+    },
+    "linux-arm64": {
+      "asset": "rulesync-linux-arm64",
+      "sha256": "1f61978418e4704c9243fca929fc07986b6238d1c1888d9e9c3ab267049fc51d",
+      "cache_path": ".tools/rulesync/15.0.1/linux-arm64/rulesync"
+    }
+  }
+}

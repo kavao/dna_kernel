@@ -2,12 +2,47 @@
 
 このファイルは、各ファイルの役割と、導入先プロジェクトへ移植・注入するときの推奨配置先を示します。
 
+## これは何を組み込むものか
+
+`dna_kernel` は、既存リポジトリへコピー・統合して使う、LLM向けのルール体系カーネルです。単体アプリケーションやLLM本体ではなく、次の流れを導入します。
+
+```text
+.rulesync/rules/ + .rulesync/skills/  正本
+                 │
+                 ├─ rulesync ──► Codex / Claude Code / Cursor等の生成設定
+                 └─ tools/kernel/ ──► 完了検査・計画検査・証跡
+                                          │
+                                          ▼
+                                  _workingspace/
+                                  計画・ログ・日記
+```
+
+正本を編集し、生成物を再生成し、機械検査と証跡で完了を確認する構造です。これにより、AIツールを切り替えるたびのルール再説明、ツール別設定の手修正、計画状態の再引継ぎを減らします。
+
+## 導入プロファイル
+
+| プロファイル | 目的 | 主なコピー対象 |
+|--------------|------|----------------|
+| Rule-only | ルールとAIツール向け設定を統一する | `.rulesync/rules/`, `rulesync.jsonc`, Rulesyncラッパー、生成設定 |
+| Governance | 完了判定と作業証跡まで統一する | Rule-only + `output-discipline`, `plan-design-check`, `workspace-audit-log`, `_workingspace/` |
+| Full | 導入判定・会話言語・補助処理まで利用する | Governance + `project-onboarding`, `user-locale`、必要な補助ツール |
+
+必要な範囲だけを選び、既存リポジトリのREADME、設定、注入先ルートを維持します。`images/title.png` は本体リポジトリ用のため、導入先へコピーしません。
+
+## 依存性の要約
+
+- Python `>=3.11` が基盤で、主要なkernelツールは標準ライブラリのみで動作します。
+- uvは推奨実行補助ですが任意です。Node.js、npm、pnpm、Corepackは日常のRulesync生成に必要ありません。
+- Rulesync単体バイナリとネットワークは初回取得・版更新時に必要で、取得後は`.tools/`のキャッシュを利用します。
+- 現在の標準targetは `claudecode`、`cursor`、`codexcli`、`grokcli` です。Rulesync 15.0.1の `grokcli` は `.grok/skills/` を生成しますが、実際のGrok Buildの読み込みは導入先で確認します。
+
 ## .rulesync/rules/（概念・ガバナンスの正本）
 
 rulesync が各 LLM ツールの設定ファイルへ変換します。
 
 | ファイル | 役割 | 導入先での配置先 |
 |----------|------|--------------------------|
+| `.rulesync/rules/agents.md` | 共有 `AGENTS.md` の索引・ルーター正本。詳細ルールを複製しない | `.rulesync/rules/agents.md` |
 | `.rulesync/rules/concepts.md` | 正本・副本・完了条件の概念定義 | `.rulesync/rules/concepts.md` |
 | `.rulesync/rules/rule-authoring.md` | ルール追加時の分類・置き場の作法 | `.rulesync/rules/rule-authoring.md` |
 | `.rulesync/rules/docs-writing.md` | docs/ ドキュメント記述ルール（`docs/**/*.md` に適用） | `.rulesync/rules/docs-writing.md` |
@@ -29,6 +64,7 @@ rulesync が各 LLM ツールのスキル設定へ変換します。
 | `.rulesync/skills/project-context/SKILL.md` | プロジェクト文脈の要約・引き継ぎ | `.rulesync/skills/project-context/` |
 | `.rulesync/skills/project-onboarding/SKILL.md` | 新規作成・既存注入と overview.md 作成フロー | `.rulesync/skills/project-onboarding/` |
 | `.rulesync/skills/code-testing/SKILL.md` | コード変更時のテスト実行・デグレード防止 | `.rulesync/skills/code-testing/` |
+| `.rulesync/skills/plan-design-check/SKILL.md` | 計画書・設計書の進捗チェックボックス検査 | `.rulesync/skills/plan-design-check/` |
 | `.rulesync/skills/user-locale/SKILL.md` | 会話言語（ホーム config）と user-locale 副本 sync | `.rulesync/skills/user-locale/` |
 | `.rulesync/skills/content-placement/SKILL.md` | 執筆前の種類・正本・副本の判断 | `.rulesync/skills/content-placement/` |
 
@@ -37,6 +73,16 @@ rulesync が各 LLM ツールのスキル設定へ変換します。
 | ファイル | 役割 | 導入先での配置先 |
 |----------|------|--------------------------|
 | `rulesync.jsonc` | targets・features の指定 | プロジェクトルート |
+
+## 固定版 Rulesync ツールチェーン
+
+Rulesync は Node.js や npm に依存せず、Python ラッパーから固定版の公式単体バイナリを取得・検証して実行します。取得物は `.tools/` に置き、Git 管理しません。
+
+| ファイル | 役割 | 導入先での配置先 |
+|----------|------|--------------------------|
+| `config/rulesync_toolchain.json` | Rulesync 15.0.1 の資産・SHA-256・OS/CPU 対応表 | `config/rulesync_toolchain.json` |
+| `tools/install_rulesync.py` | 固定版バイナリの取得・ハッシュ・バージョン検証 | `tools/install_rulesync.py` |
+| `tools/rulesync.py` | 検証済みローカルバイナリの CLI ラッパー | `tools/rulesync.py` |
 
 ## ルート入口（dna_kernel 本体）
 
@@ -69,6 +115,9 @@ rulesync の管理外。人間が読む説明ドキュメント。
 | `tools/kernel/workspace_audit_log.py` | 査証ログ・日記への追記書き込み | `tools/kernel/workspace_audit_log.py` |
 | `tools/kernel/json_weighted_pick.py` | JSON リストからの重み付き乱数選択 | `tools/kernel/json_weighted_pick.py` |
 | `tools/kernel/user_prefs.py` | ホーム config 読取・会話言語・user-locale 副本 sync | `tools/kernel/user_prefs.py` |
+| `tools/kernel/plan_check.py` | 計画書・設計書の進捗チェックボックス検査 | `tools/kernel/plan_check.py` |
+| `tools/kernel/rulesync_router_metrics.py` | Python標準ライブラリによるルーター・生成物の定量測定 | `tools/kernel/rulesync_router_metrics.py` |
+| `tools/kernel/dna_kernel_import.py` | 既存リポジトリのpreflight・棚卸し・dry-run・verify（読み取り専用） | `tools/kernel/dna_kernel_import.py` |
 
 ホーム config（git 管理外）: `~/.config/dna-kernel/config.toml`。プロジェクト上書き: `.dna-kernel.local.toml`（gitignore）。
 
@@ -85,6 +134,6 @@ rulesync の管理外。人間が読む説明ドキュメント。
 
 ## 最小セット（どれか1つから始めるなら）
 
-- **ルールだけ**: `.rulesync/rules/concepts.md` + `rulesync.jsonc` + `corepack pnpm dlx rulesync generate` 実行
+- **ルールだけ**: `.rulesync/rules/concepts.md` + `rulesync.jsonc` + `python tools/rulesync.py generate` 実行
 - **ログまで**: 上記に `tools/kernel/workspace_audit_log.py` を追加
 - **pre-work-check まで**: 上記にチェックスクリプトを追加（`novel_project_check.py` はその拡張例）

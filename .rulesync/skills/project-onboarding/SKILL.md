@@ -9,6 +9,27 @@ targets: ["*"]
 新しいプロジェクトや既存プロジェクトで dna_kernel を使い始めるときに、最初の会話と初期化を迷わせない。
 既存構成を壊さず、`overview.md` と `docs/ja/dna-kernel/` を起点に rulesync・uv・ワークスペースを整える。
 
+## 導入プロファイル
+
+導入前に、必要な範囲を次の3つから選ぶ。
+
+- **Rule-only**: `.rulesync/` のルール正本、Rulesync設定・ラッパー、各AIツール向け生成設定
+- **Governance**: Rule-only に完了規律、計画検査、査証ログ、`_workingspace/` を追加
+- **Full**: Governance に `project-onboarding`、`user-locale`、必要な補助スキル・ツールを追加。`tools/plugins/` の任意機能は標準プロファイル外として個別承認する。
+
+Codex、Claude Code、Cursor、Grok Build等を切り替えるときのルール・完了条件・作業状態の再説明を減らすことが導入効果である。Rulesync 15.0.1の標準targetには `grokcli` があり `.grok/skills/` を生成するが、実際のGrok Buildの読み込みは導入先で確認する。
+
+## 標準読込順
+
+導入依頼を受けたら、次の順で確認する。
+
+1. ルートREADMEまたはユーザーの依頼から、導入目的を確認する。
+2. `manifest.md` で構成要素、導入先、プロファイルを確認する。
+3. 本スキルで新規作成・既存注入・DNA_KERNEL開発を判定する。
+4. `README.md`、`overview.md`、`docs/`、`tools/`、`.rulesync/`、`rulesync.jsonc`、`.gitignore`、`.dna-kernel.local.toml` を確認する。
+5. 会話言語の解決結果を確認し、プロジェクト上書きの要否を提示する。
+6. 変更予定と選択したプロファイルを提示し、了承を得てから書き込む。
+
 ## 適用する場面
 
 - ユーザーが新規プロジェクトへ dna_kernel を導入したいと言ったとき
@@ -60,16 +81,21 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 
 - `.rulesync/`
 - `rulesync.jsonc`
+- `config/rulesync_toolchain.json`
 - `docs/ja/dna-kernel/`
 - `docs/en/dna-kernel/`
+- `tools/install_rulesync.py`
+- `tools/rulesync.py`
 - `tools/kernel/`
+- `tools/plugins/`（標準プロファイル外の承認済み準拠プラグイン）
 - `_workingspace/`
 
 これらは、指定された注入先ルートの配下に置く。
 
 提示する内容:
 
-- 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/kernel/`
+- 追加または統合するファイル: `.rulesync/`, `rulesync.jsonc`, `config/rulesync_toolchain.json`, `docs/ja/dna-kernel/`, `docs/en/dna-kernel/`, `tools/install_rulesync.py`, `tools/rulesync.py`, `tools/kernel/`
+- 個別承認が必要な追加候補: `tools/plugins/`（Rule-only / Governance / Fullの標準範囲外にある準拠プラグイン）
 - 追記する可能性があるファイル: `.gitignore`, `pyproject.toml`
 - 触らない方針: 既存 `README.md` は上書きしない
 - 取り込まない: `images/title.png`（dna_kernel 本体 README 用。注入先では不要）
@@ -80,18 +106,48 @@ monorepo の上位ディレクトリや Git ルートへ自動的に広げない
 指定されたディレクトリを注入先ルートとして扱います。上位の monorepo ルートや Git ルートへは広げません。
 README.md は触らず、dna_kernel の説明は docs/ja/dna-kernel/（正本）と docs/en/dna-kernel/（英訳）に追加します。
 .rulesync/・rulesync.jsonc・tools/kernel/・_workingspace/・.gitignore の追加または統合を進めてよいですか？
+標準プロファイル外の tools/plugins/ も取り込みますか？取り込む場合は、依存性・target・テスト・ロールバックを別途確認します。
 ```
+
+### 既存リポジトリの棚卸しとインポート統制
+
+既存注入では、対象リポジトリをdna_kernelの導入先として明示的に確定し、dna_kernel主導で調査・計画を行う。導入後の正本は対象リポジトリが所有する。上位monorepoや別のGitルートへ自動的に広げない。
+
+書き込み前に、次の読み取り専用コマンドを対象ルートで実行する。
+
+```bash
+uv run python tools/kernel/dna_kernel_import.py preflight <target-root>
+uv run python tools/kernel/dna_kernel_import.py inventory <target-root> --format json
+uv run python tools/kernel/dna_kernel_import.py plan <target-root> --profile governance --dry-run
+```
+
+既存の `AGENTS.md`、`CLAUDE.md`、`.cursor/`、`.claude/` 等は、正本か生成物かを棚卸しして分類する。分類できないものはコピーせず保留する。既存ルール・スキルは、`.rulesync/rules/agents.md` のroute、常時適用、または明示除外のいずれかへ登録し、標準ルールを共有 `AGENTS.md` へ無差別に取り込まない。`targets`、`globs`、`root`、共有入口の所有targetを同時に確認する。
+
+LLMは、採用・統合・参照化・除外・保留の判断理由と、生成物・依存性・テスト・ロールバックへの影響をdry-run結果として提示する。ユーザー承認前は正本、設定、生成物を変更しない。承認後に限り、`backup-before-edit` で退避して最小範囲を注入し、生成・検査・監査を行う。
+
+また、同じ修正や判断が繰り返された場合は、LLMが「この内容をrulesyncのルールまたはスキルへ保存しますか？」と確認する。承認された場合だけ対象側の正本へ保存し、却下・保留なら今回限りとして永続化しない。モデル再訓練や無断の自律変更を「学習」と呼ばない。
+
+インポート完了時は次を実行する。
+
+```bash
+uv run python tools/kernel/dna_kernel_import.py verify <target-root>
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate --check
+```
+
+`verify` は、索引網羅率、targetごとのroot所有者、標準ルールの共有入口分離を確認する。実際のAIツールが読み込んだことは、Rulesyncの生成成功とは別の実読込確認として記録する。
 
 了承後の流れ:
 
 1. `docs/ja/dna-kernel/` に説明文書を置き、同パスで `docs/en/dna-kernel/` に英訳を同期する。
 2. `.rulesync/` と `rulesync.jsonc` を追加または統合する。
-3. `tools/kernel/` に必要なツールを置く。
+3. `tools/kernel/` に必要なコアツールを置く。承認済みの任意プラグインがある場合だけ `tools/plugins/` に置く。
 4. `.gitignore` に rulesync 生成物と `_workingspace/` の扱いを追記する。
-5. `corepack pnpm dlx rulesync generate --dry-run` を実行し、結果を提示する。
-6. 了承後に `corepack pnpm dlx rulesync generate` を実行する。
-7. `uv run python tools/kernel/user_prefs.py sync` で会話言語副本を再生成する。
-8. 必要なら `overview.md` を作るか確認し、プロジェクト内容を聞く。
+5. `python tools/install_rulesync.py` で Rulesync 15.0.1 を取得・検証する。
+6. `python tools/rulesync.py generate --dry-run` を実行し、結果を提示する。
+7. 了承後に `python tools/rulesync.py generate` と `python tools/rulesync.py generate --check` を実行する。
+8. `uv run python tools/kernel/user_prefs.py sync` で会話言語副本を再生成する。
+9. 必要なら `overview.md` を作るか確認し、プロジェクト内容を聞く。
 
 ## 新規プロジェクト作成モード
 
@@ -120,7 +176,7 @@ README.md は触らず、dna_kernel の説明は docs/ja/dna-kernel/（正本）
 `overview.md` を作成する了承を得たら、次を確認する。
 
 ```bash
-corepack pnpm dlx rulesync --version
+python tools/install_rulesync.py
 uv --version
 ```
 
@@ -131,11 +187,12 @@ uv --version
 ```text
 rulesync または uv が未導入です。初期化に必要なので、こちらで導入してよいですか？
 実行予定:
-- corepack enable（未実行の場合）
 - uv の公式インストーラを実行
 - uv run python init.py
-- corepack pnpm dlx rulesync generate --dry-run
-- corepack pnpm dlx rulesync generate
+- python tools/install_rulesync.py
+- python tools/rulesync.py generate --dry-run
+- python tools/rulesync.py generate
+- python tools/rulesync.py generate --check
 - uv run python tools/kernel/user_prefs.py sync
 ```
 
@@ -148,22 +205,24 @@ rulesync または uv が未導入です。初期化に必要なので、こち�
 Windows PowerShell:
 
 ```powershell
-corepack enable
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 uv run python init.py
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
 
 macOS / Linux:
 
 ```bash
-corepack enable
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv run python init.py
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
 
@@ -234,7 +293,7 @@ dna_kernel 本体を直していると判断できる場合は、このスキル
 - `docs/ja/dna-kernel/` の説明を直す依頼
 - `tools/kernel/` や `init.py` を修正する依頼
 
-この場合は、既存ファイルを読んで直接修正し、必要に応じて `corepack pnpm dlx rulesync generate --dry-run` または `corepack pnpm dlx rulesync generate --check` で確認する。
+この場合は、既存ファイルを読んで直接修正し、必要に応じて `python tools/rulesync.py generate --dry-run` または `python tools/rulesync.py generate --check` で確認する。
 
 ## 関連
 

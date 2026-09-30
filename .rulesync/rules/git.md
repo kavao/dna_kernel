@@ -1,5 +1,5 @@
 ---
-targets: ["*"]
+targets: ["claudecode", "cursor"]
 description: "git 運用ルール（コミットメッセージ等）"
 globs: ["**/*"]
 ---

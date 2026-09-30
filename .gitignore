@@ -5,7 +5,9 @@
 .codex/
 .kilo/
 .agents/
+.grok/
 AGENTS.md
+!.rulesync/rules/agents.md
 CLAUDE.md
 
 # ===== ワークスペース（ローカル作業ファイル） =====
@@ -15,6 +17,7 @@ _workingspace/**
 !_workingspace/**/.gitkeep
 !_workingspace/plans/
 !_workingspace/plans/*.md
+_workingspace/tmp-tools/
 _backup/
 _old/
 
@@ -28,6 +31,10 @@ __pycache__/
 
 # ===== Node.js =====
 node_modules/
+
+# ===== Rulesync 固定版キャッシュ =====
+# 公式単体バイナリは Python ラッパーが取得し、リポジトリには含めない
+.tools/
 
 # ===== 環境変数 =====
 .env

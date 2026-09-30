@@ -7,6 +7,56 @@ dna_kernel is a minimal kernel for injecting **self-evolving rule governance** i
 The root `README.md` belongs to the host project.
 Detailed dna_kernel documentation lives under `docs/en/dna-kernel/` (English, default display) and `docs/ja/dna-kernel/` (Japanese editorial source).
 
+## Who it is for
+
+dna_kernel is for teams that use several LLM tools in an existing development or creative repository, such as Codex, Claude Code, and Cursor. Injecting dna_kernel into the host repository reduces the need to repeat rules in each tool conversation or maintain separate instruction files by hand.
+
+Status per AI tool:
+
+| Tool | Rulesync target | Generation | Actual consumption |
+|---|---|---|---|
+| Claude Code | `claudecode` | `CLAUDE.md` and `.claude/` | Confirmed* |
+| Cursor | `cursor` | `.cursor/` | Not verified |
+| Codex CLI | `codexcli` | Index-only `AGENTS.md` and `.agents/skills/` | Not verified |
+| Grok Build | `grokcli` | Index-only `AGENTS.md` and `.grok/skills/` | Not verified (verify in the host repository) |
+
+\* Confirmed as of 2026-08-18: the Claude Code session that authored this table is itself running on the generated `CLAUDE.md` (this session's `CLAUDE.md` and `.claude/rules/` were regenerated to include these edits; recorded in `_workingspace/log/202608.md`). Verify again in other host repositories.
+
+Being able to generate a file is not the same as a tool actually reading it. Review this table whenever a target is added or updated.
+
+The shared `AGENTS.md` generated for Codex CLI and Grok Build is an index, not a concatenation of detailed rules. It routes to the canonical rules and skills under `.rulesync/`. Claude Code and Cursor receive detailed rules through explicitly targeted outputs. This prevents standard rules from being pulled into a shared entry point by target order and makes entry size and target ownership measurable.
+
+## What it provides
+
+| Problem | After adoption | Where to verify |
+|---|---|---|
+| Rules diverge between tools | Generate settings from `.rulesync/` sources | `AGENTS.md`, `CLAUDE.md`, `.cursor/`, and similar outputs |
+| Completion claims lack evidence | Require saved files, reloads, and machine checks | `generate --check`, `plan_check.py` |
+| Work history can be rewritten | Keep append-only audit logs | `_workingspace/log/` |
+| Detailed plan status drifts | Check `[ ]` / `[x]`, versions, and change history | `_workingspace/plans/` |
+| Each tool requires a separate environment | Generate with a Python-standard-library-centered setup | `tools/`, `config/` |
+| Existing knowledge is scattered across a repository | Inventory it during injection and register it in the `AGENTS.md` index or explicitly exclude it | `dna_kernel_import.py`, `.rulesync/rules/agents.md` |
+| Users have to hand-maintain every new rule | Let the LLM organize a candidate and ask whether to save it to Rulesync before updating canonical sources | `self-evolving-governance.md` |
+
+## Adoption profiles
+
+Start with only the scope the host repository needs:
+
+- **Rule-only**: unify canonical rules and settings for AI tools
+- **Governance**: add completion checks, plan checks, and audit logs
+- **Full**: also use onboarding, conversation-language, and related synchronization helpers
+
+See [`manifest.md`](../../../manifest.md) and [onboarding.md](onboarding.md) for the concrete copy set for each profile.
+
+## Dependencies
+
+- Python `>=3.11` is the baseline. The main kernel tools have no external Python packages.
+- uv is a recommended execution helper, but standard-library tools can also run with `python`.
+- Node.js, npm, pnpm, and Corepack are not required for daily Rulesync generation.
+- The Rulesync binary and network access are needed for the first download or a version update. Later runs use the `.tools/` cache.
+
+Conversation language is resolved in this order: explicit chat instruction, project-local config, home config, then OS locale. Project-specific overrides live in `.dna-kernel.local.toml` and are not committed.
+
 ## Why it exists
 
 The more instructions you add for an LLM, the more contradictions accumulate—and “done” spoken in chat is not evidence of completion.
@@ -25,17 +75,24 @@ dna_kernel/
   manifest.md                ← file roles and transplant paths
   rulesync.jsonc             ← rulesync config (targets, features)
   .rulesync/
-    rules/                   ← canonical concepts and governance rules
+    rules/                   ← canonical index, concepts, and governance rules
+      agents.md              ← thin shared AGENTS.md entry and router
     skills/                  ← LLM execution procedures
   docs/
     README.md                ← documentation index (EN links first)
     en/dna-kernel/           ← English (default display, translation)
     ja/dna-kernel/           ← Japanese (editorial source)
+  config/
+    rulesync_toolchain.json  ← pinned Rulesync 15.0.1 assets and SHA-256
   tools/
     README.md
+    install_rulesync.py      ← download and verify the pinned binary
+    rulesync.py              ← execute the pinned binary
     kernel/
       workspace_audit_log.py
       json_weighted_pick.py
+      rulesync_router_metrics.py
+      dna_kernel_import.py
 ```
 
 ## README handling
@@ -56,10 +113,26 @@ uv run python init.py
 Regenerate rules:
 
 ```bash
-corepack pnpm dlx rulesync generate --dry-run
-corepack pnpm dlx rulesync generate
+python tools/install_rulesync.py
+python tools/rulesync.py generate --dry-run
+python tools/rulesync.py generate
+python tools/rulesync.py generate --check
 uv run python tools/kernel/user_prefs.py sync
 ```
+
+Measure the router and plan an existing-repository import:
+
+```bash
+uv run python tools/kernel/rulesync_router_metrics.py .rulesync/rules .rulesync/skills --base . --format json
+uv run python tools/kernel/dna_kernel_import.py preflight <target-root>
+uv run python tools/kernel/dna_kernel_import.py inventory <target-root> --format json
+uv run python tools/kernel/dna_kernel_import.py plan <target-root> --profile governance --dry-run
+uv run python tools/kernel/dna_kernel_import.py verify <target-root>
+```
+
+`dna_kernel_import.py` is read-only. It does not write to the host repository before approval; it reports preflight, inventory, index coverage, and dry-run results. After approval, proceed with backup, minimal canonical-source injection, generation, `generate --check`, and audit logging.
+
+Rulesync 15.0.1 is downloaded and verified by the Python wrapper. Node.js, npm, pnpm, and Corepack are not required for daily generation. The downloaded binary is stored under `.tools/` and is not tracked by Git.
 
 Append an audit log entry:
 
